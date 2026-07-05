@@ -14,18 +14,21 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
 
-      - name: Install Capacitor CLI & Tools
+      - name: Initialize Web Project
         run: |
-          npm init -y
-          npm install @capacitor/core @capacitor/cli
-          npx cap init "Bijoy Converter Pro" "com.nibrasit.bijoyconverter" --web-dir=.
-          npm install @capacitor/android
-          npx cap add android
+          echo '{"name": "bijoy-converter-pro", "version": "1.0.0", "dependencies": {"@capacitor/core": "^6.0.0", "@capacitor/android": "^6.0.0"}, "devDependencies": {"@capacitor/cli": "^6.0.0"}}' > package.json
+          npm install
 
-      - name: Sync Web Code with Android
-        run: npx cap sync
+      - name: Configure Capacitor Android App
+        run: |
+          npx cap init "Bijoy Converter Pro" "com.nibrasit.bijoyconverter" --web-dir=.
+          npx cap add android
+          
+          # অ্যান্ড্রয়েড প্রজেক্টের জন্য প্রয়োজনীয় মিনিমাম কনফিগারেশন জেনারেট করা
+          mkdir -p android/app/src/main/assets
+          npx cap sync
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -33,9 +36,10 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Build Android APK
+      - name: Build Android APK (Gradle)
         run: |
           cd android
+          chmod +x gradlew
           ./gradlew assembleDebug
 
       - name: Upload Finished APK
