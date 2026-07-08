@@ -23,9 +23,9 @@
           base:'#0b1220', panel:'#111827', panel2:'#1f2937', line:'#1e293b',
           soft:'#e5e7eb', muted:'#94a3b8', brand:'#38bdf8',
           income:'#22c55e', expense:'#ef4444',
-          lBase:'#f8fafc', lPanel:'#ffffff', lLine:'#e2e8f0', lText:'#0f172a', lMuted: '#64748b'
+          lBase:'#f8fafc', lPanel:'#ffffff', lLine:'#e2e8f0', lText:'#0f172a'
         },
-        boxShadow: { card: '0 10px 30px -12px rgba(0,0,0,0.4)', neon: '0 0 15px rgba(56,189,248,0.3)' }
+        boxShadow: { card: '0 10px 30px -12px rgba(0,0,0,0.4)', neon: '0 0 15px rgba(56,189,248,0.2)' }
       }
     }
   }
@@ -33,16 +33,19 @@
 
 <style>
   html, body { font-family: 'Hind Siliguri', sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
-  body { transition: background-color 0.2s ease, color 0.2s ease; }
+  body { transition: background-color 0.2s, color 0.2s; }
   
   /* Form input field styles across dark/light modes */
   .field { background:#0f172a; border:1px solid #1e293b; color:#e5e7eb; transition:all .2s ease; }
   .field:focus { outline:none; border-color:#38bdf8; box-shadow:0 0 0 3px rgba(56,189,248,.15); }
-  html.light .field { background:#f1f5f9; border-color:#cbd5e1; color:#0f172a; }
+  
+  /* Light mode explicit overrides */
+  html.light body { background: #f8fafc; color: #0f172a; }
+  html.light .field { background:#ffffff; border-color:#cbd5e1; color:#0f172a; }
+  html.light .field:focus { border-color:#38bdf8; }
   
   .seg-btn.active { background:#38bdf8; color:#0b1220; font-weight:600; }
-  html.light .seg-btn.active { background:#38bdf8; color:#ffffff; }
-
+  
   /* App animations */
   @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
   @keyframes fadeIn { from{opacity:0} to{opacity:1} }
@@ -54,7 +57,7 @@
   input[type=number] { -moz-appearance:textfield; }
 </style>
 </head>
-<body class="bg-base text-soft dark:bg-base dark:text-soft light:bg-lBase light:text-lText text-slate-200 html-body">
+<body class="bg-base text-soft dark:bg-base dark:text-soft">
 
 <div class="max-w-xl mx-auto px-4 pt-6 safe-bottom relative min-h-screen">
   
@@ -64,7 +67,7 @@
         <i data-lucide="wallet" class="w-6 h-6 text-slate-900"></i>
       </div>
       <div>
-        <h1 class="text-lg font-bold leading-tight dark:text-soft text-lText id-title">আয়-ব্যয় হিসাব প্রো</h1>
+        <h1 class="text-lg font-bold leading-tight dark:text-soft text-lText">আয়-ব্যয় হিসাব প্রো</h1>
         <p class="text-xs text-muted" id="todayLabel">আজকের হিসাব</p>
       </div>
     </div>
@@ -97,7 +100,7 @@
           <h3 class="text-sm font-semibold flex items-center gap-2 dark:text-soft text-lText">
             <i data-lucide="line-chart" class="w-4 h-4 text-brand"></i> আয়-ব্যয় ট্রেন্ড গ্রাফ
           </h3>
-          <div class="flex gap-1 p-0.5 bg-slate-900 dark:bg-slate-900 bg-slate-200 rounded-lg text-[10px]">
+          <div class="flex gap-1 p-0.5 bg-slate-900 dark:bg-slate-900 bg-slate-200 border dark:border-line border-lLine rounded-lg text-[10px]">
             <button onclick="changeGraphTime('week')" id="gTime-week" class="px-2 py-1 rounded-md text-muted font-bold">সপ্তাহ</button>
             <button onclick="changeGraphTime('month')" id="gTime-month" class="px-2 py-1 rounded-md text-muted font-bold">মাস</button>
             <button onclick="changeGraphTime('year')" id="gTime-year" class="px-2 py-1 rounded-md text-muted font-bold">বছর</button>
@@ -147,7 +150,7 @@
             </select>
           </div>
         </div>
-        <button onclick="resetHistoryFilters()" class="w-full py-2 bg-slate-800 dark:bg-slate-800 bg-slate-200 rounded-xl text-xs font-medium text-muted hover:text-brand transition">ফিল্টার রিসেট করুন</button>
+        <button onclick="resetHistoryFilters()" class="w-full py-2 bg-slate-800 dark:bg-slate-800 bg-slate-200 border dark:border-line border-lLine rounded-xl text-xs font-medium text-muted hover:text-brand transition">ফিল্টার রিসেট করুন</button>
       </div>
 
       <ul id="fullTxList" class="space-y-2"></ul>
@@ -280,7 +283,7 @@
 
 <script>
 // ═══════════════════════════════════════════
-// APP STATE & OBJECTS
+// APP STATE & CONSTANTS
 // ═══════════════════════════════════════════
 const STORAGE_KEY = 'ai_bay_pro_v3';
 const CAT_STORAGE_KEY = 'ai_bay_cats_v3';
@@ -293,9 +296,8 @@ let categories = {
 
 let currentType = 'income';
 let currentActiveTab = 'home';
-let graphTimeMode = 'week'; // week | month | year
-
-let activeThemeSetting = 'system'; // light | dark | system
+let graphTimeMode = 'week';
+let activeThemeSetting = 'system';
 
 const bnDigits = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
 const toBn = s => String(s).replace(/[0-9]/g, d => bnDigits[+d]);
@@ -312,7 +314,6 @@ document.addEventListener('DOMContentLoaded', () => {
     renderAll();
     updateDateLabels();
     
-    // Listen for OS native level theme changes
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
         if(activeThemeSetting === 'system') applyThemeLogic();
     });
@@ -322,13 +323,9 @@ function applyThemeLogic() {
     const doc = document.documentElement;
     let computedDark = false;
     
-    if(activeThemeSetting === 'dark') {
-        computedDark = true;
-    } else if(activeThemeSetting === 'light') {
-        computedDark = false;
-    } else {
-        computedDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
+    if(activeThemeSetting === 'dark') computedDark = true;
+    else if(activeThemeSetting === 'light') computedDark = false;
+    else computedDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     
     if(computedDark) {
         doc.classList.remove('light');
@@ -338,10 +335,9 @@ function applyThemeLogic() {
         $('themeMeta').setAttribute('content', '#f8fafc');
     }
     
-    // Update theme configuration view list button highlights
-    document.querySelectorAll('.theme-mode-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.theme-mode-btn').forEach(b => b.classList.remove('active', 'bg-brand', 'text-slate-900'));
     const targetedBtn = $('themeMode-' + activeThemeSetting);
-    if(targetedBtn) targetedBtn.classList.add('active');
+    if(targetedBtn) targetedBtn.classList.add('active', 'bg-brand', 'text-slate-900');
     
     $('currentModeBadge').textContent = 'মোড: ' + (activeThemeSetting === 'system'?'সিস্টেম':activeThemeSetting === 'dark'?'ডার্ক':'লাইট');
     renderCurveGraph();
@@ -360,7 +356,7 @@ function updateDateLabels() {
 }
 
 // ═══════════════════════════════════════════
-// DATA STORE PERSISTENCE
+// DATA METHODS & RENDERERS
 // ═══════════════════════════════════════════
 function loadData() {
     try {
@@ -404,19 +400,18 @@ function computeTotals() {
 }
 
 // ═══════════════════════════════════════════
-// PREMIUM SVB SMOOTH CURVED GRAPH ENGINE
+// PREMIUM SMOOTH CURVED GRAPH ENGINE
 // ═══════════════════════════════════════════
 function changeGraphTime(mode) {
     graphTimeMode = mode;
-    document.querySelectorAll('[id^="gTime-"]').forEach(b => b.classList.remove('active'));
-    $('gTime-' + mode).classList.add('active');
+    document.querySelectorAll('[id^="gTime-"]').forEach(b => b.classList.remove('active', 'bg-brand', 'text-slate-900'));
+    $('gTime-' + mode).classList.add('active', 'bg-brand', 'text-slate-900');
     renderCurveGraph();
 }
 
 function renderCurveGraph() {
     const wrapper = $('curveGraphWrapper');
-    let pointsCount = 7;
-    let dataTimeline = [];
+    let pointsCount = 7; let dataTimeline = [];
     
     if(graphTimeMode === 'week') {
         pointsCount = 7;
@@ -458,11 +453,8 @@ function renderCurveGraph() {
     });
 
     let maxVal = Math.max(...incomePoints, ...expensePoints, 1000);
-    
-    // SVG Dimensions
     const width = 500, height = 130, padding = 15;
-    const graphWidth = width - padding * 2;
-    const graphHeight = height - padding * 2;
+    const graphWidth = width - padding * 2; const graphHeight = height - padding * 2;
     
     const getCoordinates = (pointsArray) => {
         return pointsArray.map((val, idx) => {
@@ -472,18 +464,14 @@ function renderCurveGraph() {
         });
     };
 
-    const incCoords = getCoordinates(incomePoints);
-    const expCoords = getCoordinates(expensePoints);
+    const incCoords = getCoordinates(incomePoints); const expCoords = getCoordinates(expensePoints);
 
-    // Dynamic Bezier Path calculation generator string
     const makeSmoothPath = (coords) => {
         if(coords.length === 0) return '';
         let d = `M ${coords[0].x} ${coords[0].y}`;
         for (let i = 0; i < coords.length - 1; i++) {
-            const cpX1 = coords[i].x + (coords[i+1].x - coords[i].x) / 2;
-            const cpY1 = coords[i].y;
-            const cpX2 = coords[i].x + (coords[i+1].x - coords[i].x) / 2;
-            const cpY2 = coords[i+1].y;
+            const cpX1 = coords[i].x + (coords[i+1].x - coords[i].x) / 2; const cpY1 = coords[i].y;
+            const cpX2 = coords[i].x + (coords[i+1].x - coords[i].x) / 2; const cpY2 = coords[i+1].y;
             d += ` C ${cpX1} ${cpY1}, ${cpX2} ${cpY2}, ${coords[i+1].x} ${coords[i+1].y}`;
         }
         return d;
@@ -492,39 +480,30 @@ function renderCurveGraph() {
     const isLight = document.documentElement.classList.contains('light');
     const axisColor = isLight ? '#cbd5e1' : '#1e293b';
 
-    let svgHtml = `
+    wrapper.innerHTML = `
       <svg viewBox="0 0 ${width} ${height}" class="w-full h-full overflow-visible">
         <defs>
           <linearGradient id="incGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#22c55e" stop-opacity="0.25"/>
-            <stop offset="100%" stop-color="#22c55e" stop-opacity="0.0"/>
+            <stop offset="0%" stop-color="#22c55e" stop-opacity="0.25"/><stop offset="100%" stop-color="#22c55e" stop-opacity="0.0"/>
           </linearGradient>
           <linearGradient id="expGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#ef4444" stop-opacity="0.25"/>
-            <stop offset="100%" stop-color="#ef4444" stop-opacity="0.0"/>
+            <stop offset="0%" stop-color="#ef4444" stop-opacity="0.25"/><stop offset="100%" stop-color="#ef4444" stop-opacity="0.0"/>
           </linearGradient>
         </defs>
         <line x1="${padding}" y1="${padding + graphHeight}" x2="${width - padding}" y2="${padding + graphHeight}" stroke="${axisColor}" stroke-width="1" />
-        
         <path d="${makeSmoothPath(incCoords)} L ${incCoords[incCoords.length-1].x} ${padding+graphHeight} L ${incCoords[0].x} ${padding+graphHeight} Z" fill="url(#incGrad)" />
         <path d="${makeSmoothPath(expCoords)} L ${expCoords[expCoords.length-1].x} ${padding+graphHeight} L ${expCoords[0].x} ${padding+graphHeight} Z" fill="url(#expGrad)" />
-
         <path d="${makeSmoothPath(incCoords)}" fill="none" stroke="#22c55e" stroke-width="3" stroke-linecap="round" />
         <path d="${makeSmoothPath(expCoords)}" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round" />
-        
-        ${incCoords.map((c, i) => `<circle cx="${c.x}" cy="${c.y}" r="3" fill="#0b1220" stroke="#22c55e" stroke-width="2"/>`).join('')}
-        ${expCoords.map((c, i) => `<circle cx="${c.x}" cy="${c.y}" r="3" fill="#0b1220" stroke="#ef4444" stroke-width="2"/>`).join('')}
+        ${incCoords.map(c => `<circle cx="${c.x}" cy="${c.y}" r="3" fill="#0b1220" stroke="#22c55e" stroke-width="2"/>`).join('')}
+        ${expCoords.map(c => `<circle cx="${c.x}" cy="${c.y}" r="3" fill="#0b1220" stroke="#ef4444" stroke-width="2"/>`).join('')}
       </svg>
       <div class="absolute bottom-0 left-0 right-0 flex justify-between px-3 text-[9px] text-muted font-bold">
         ${dataTimeline.map(t => `<span>${t.label}</span>`).join('')}
       </div>
     `;
-    wrapper.innerHTML = svgHtml;
 }
 
-// ═══════════════════════════════════════════
-// GLOBAL RENDER ENGINE CONTROLLER
-// ═══════════════════════════════════════════
 function renderAll() {
     renderTotals();
     renderCurveGraph();
@@ -539,7 +518,7 @@ function renderTotals() {
     $('balance').textContent = (balance < 0 ? '- ' : '') + fmt(balance);
     $('totalIncome').textContent = fmt(income);
     $('totalExpense').textContent = fmt(expense);
-    $('balance').className = "text-3xl font-bold tracking-tight mb-4 " + (balance > 0 ? 'text-income' : balance < 0 ? 'text-expense' : 'text-white');
+    $('balance').className = "text-3xl font-bold tracking-tight mb-4 " + (balance > 0 ? 'text-income' : balance < 0 ? 'text-expense' : 'dark:text-soft text-lText');
 }
 
 function renderRecentTransactions() {
@@ -552,7 +531,6 @@ function renderRecentTransactions() {
     list.innerHTML = sorted.map(t => getTxLiHtml(t)).join('');
 }
 
-// 🗓️ DYNAMIC HISTORY SEARCH ENGINE WITH CALENDAR FILTER
 function applyHistoryFilters() {
     const dateVal = $('historyDateFilter').value;
     const typeVal = $('historyTypeFilter').value;
@@ -570,9 +548,7 @@ function applyHistoryFilters() {
 }
 
 function resetHistoryFilters() {
-    $('historyDateFilter').value = '';
-    $('historyTypeFilter').value = 'all';
-    applyHistoryFilters();
+    $('historyDateFilter').value = ''; $('historyTypeFilter').value = 'all'; applyHistoryFilters();
 }
 
 function getTxLiHtml(t) {
@@ -617,7 +593,7 @@ function getCatLiHtml(name, type, idx) {
 }
 
 // ═══════════════════════════════════════════
-// FORM ACTION CONTROL MODULES
+// EVENTS & HANDLERS
 // ═══════════════════════════════════════════
 function setupInitialEvents() {
     $('txForm').addEventListener('submit', handleTxSubmit);
@@ -660,10 +636,8 @@ function closeTxModal() {
 
 function handleTxSubmit(e) {
     e.preventDefault();
-    const category = $('txCategory').value;
-    const amount = parseFloat($('amount').value);
-    const desc = $('desc').value.trim();
-    const date = $('date').value;
+    const category = $('txCategory').value; const amount = parseFloat($('amount').value);
+    const desc = $('desc').value.trim(); const date = $('date').value;
     if(!category || !amount || amount <= 0 || !date) { toast('দয়া করে সঠিক তথ্য দিন', true); return; }
     transactions.push({ id: Date.now(), type: currentType, category, amount, desc, date });
     saveData(); closeTxModal(); renderAll(); toast('লেনদেন সফলভাবে যুক্ত হয়েছে');
@@ -682,7 +656,7 @@ function handleCatSubmit(e) {
 }
 
 function deleteCategory(type, idx) {
-    if(categories[type].length <= 1) { toast('সর্বminimum একটি ক্যাটাগরি থাকতে হবে', true); return; }
+    if(categories[type].length <= 1) { toast('সর্বনিম্ন একটি ক্যাটাগরি থাকতে হবে', true); return; }
     categories[type].splice(idx, 1); saveCategories(); toast('ক্যাটাগরি মুছে ফেলা হয়েছে');
 }
 
@@ -692,12 +666,11 @@ function clearAllData() {
 }
 
 // ═══════════════════════════════════════════
-// DATA STATEMENT EXPORT SUB-MODULES
+// REPORT EXPORTING SUITE
 // ═══════════════════════════════════════════
 function triggerExport() {
     if(transactions.length === 0) { toast('এক্সপোর্ট করার মতো কোনো ডেটা নেই', true); return; }
-    const format = $('exportFormat').value;
-    const dStr = new Date().toISOString().slice(0, 10);
+    const format = $('exportFormat').value; const dStr = new Date().toISOString().slice(0, 10);
     const fileName = `আয়-ব্যয় হিসাব [${toBn(dStr)}]`;
     if(format === 'excel') exportToExcel(fileName);
     else if(format === 'word') exportToWord(fileName);
@@ -707,9 +680,7 @@ function triggerExport() {
 function generateHTMLReportTable() {
     return `
       <table border="1" cellspacing="0" cellpadding="6" style="width:100%; border-collapse:collapse; font-family:sans-serif; font-size:12px;">
-        <thead>
-          <tr style="background-color:#f1f5f9; font-weight:bold;"><th>তারিখ</th><th>ধরণ</th><th>ক্যাটাগরি</th><th>বিবরণ</th><th>পরিমাণ</th></tr>
-        </thead>
+        <thead><tr style="background-color:#f1f5f9; font-weight:bold;"><th>তারিখ</th><th>ধরণ</th><th>ক্যাটাগরি</th><th>বিবরণ</th><th>পরিমাণ</th></tr></thead>
         <tbody>
           ${transactions.sort((a,b)=>b.id-a.id).map(t => `
             <tr><td>${t.date}</td><td>${t.type==='income'?'আয়':'ব্যয়'}</td><td>${t.category}</td><td>${t.desc || '-'}</td><td>৳ ${t.amount.toFixed(2)}</td></tr>
@@ -783,4 +754,4 @@ function toast(m, isErr=false) {
 }
 </script>
 </body>
-  </html>
+</html>
