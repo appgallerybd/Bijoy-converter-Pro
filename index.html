@@ -1,979 +1,969 @@
 <!DOCTYPE html>
-<html lang="bn" class="dark">
+<html lang="bn" class="">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#0d1117" media="(prefers-color-scheme:dark)">
-<meta name="theme-color" content="#f4f1eb" media="(prefers-color-scheme:light)">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>আয়-ব্যয় হিসাব প্রো</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f172a">
+<title>আয়-ব্যয় হিসাব</title>
+
+<!-- Tailwind CSS -->
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<!-- Hind Siliguri Font -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
 <script>
-tailwind.config={darkMode:'class',theme:{extend:{fontFamily:{bn:['Hind Siliguri','sans-serif']},colors:{dark:{bg:'#0d1117',card:'#161b22',elevated:'#1c2333',border:'#30363d',text:'#e6edf3',muted:'#8b949e',accent:'#ff6b35',income:'#00d68f',expense:'#ff4757'},light:{bg:'#f4f1eb',card:'#ffffff',elevated:'#fafaf7',border:'#e2ddd5',text:'#1a1a1a',muted:'#7c7872',accent:'#d4551a',income:'#059669',expense:'#dc2626'}}}}}
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Hind Siliguri', 'sans-serif'] },
+        colors: {
+          brand: { 50:'#eef2ff',100:'#e0e7ff',400:'#818cf8',500:'#6366f1',600:'#4f46e5',700:'#4338ca' },
+        }
+      }
+    }
+  }
 </script>
+
 <style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{font-family:'Hind Siliguri',sans-serif;overscroll-behavior:none;overflow:hidden;height:100%}
-::-webkit-scrollbar{width:3px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--scroll-thumb,#30363d);border-radius:4px}
-.light ::-webkit-scrollbar-thumb{background:#ccc}
-.safe-top{padding-top:max(12px,env(safe-area-inset-top))}
-.safe-bottom{padding-bottom:max(8px,env(safe-area-inset-bottom))}
-.sheet-overlay{opacity:0;pointer-events:none;transition:opacity .3s ease}
-.sheet-overlay.active{opacity:1;pointer-events:auto}
-.bottom-sheet{transform:translateY(100%);transition:transform .4s cubic-bezier(.32,.72,0,1)}
-.bottom-sheet.active{transform:translateY(0)}
-.tab-content{display:none;animation:fadeUp .35s ease}
-.tab-content.active{display:block}
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-@keyframes pulse-ring{0%{transform:scale(.9);opacity:.7}50%{transform:scale(1.05);opacity:1}100%{transform:scale(.9);opacity:.7}}
-@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
-.fab-pulse{animation:pulse-ring 2.5s ease-in-out infinite}
-.stat-card{transition:transform .2s ease,box-shadow .2s ease}
-.stat-card:active{transform:scale(.97)}
-.segment-btn{transition:all .25s ease}
-.segment-btn.active{background:var(--seg-active,#ff6b35);color:#fff;box-shadow:0 2px 12px rgba(255,107,53,.35)}
-.light .segment-btn.active{box-shadow:0 2px 12px rgba(212,85,26,.3)}
-.nav-item{transition:color .2s ease}
-.nav-item.active .nav-icon{color:var(--nav-color,#ff6b35)}
-.nav-item.active .nav-label{color:var(--nav-color,#ff6b35)}
-.light .nav-item.active .nav-icon,.light .nav-item.active .nav-label{color:#d4551a}
-select,input{font-family:'Hind Siliguri',sans-serif}
-input[type="date"]::-webkit-calendar-picker-indicator{filter:var(--cal-filter,invert(1));cursor:pointer}
-.light input[type="date"]::-webkit-calendar-picker-indicator{filter:none}
-.toast{transform:translateY(-20px);opacity:0;transition:all .35s ease}
-.toast.show{transform:translateY(0);opacity:1}
-.confirm-modal{opacity:0;pointer-events:none;transition:opacity .25s ease}
-.confirm-modal.active{opacity:1;pointer-events:auto}
-.confirm-box{transform:scale(.9);transition:transform .3s cubic-bezier(.32,.72,0,1)}
-.confirm-modal.active .confirm-box{transform:scale(1)}
-.graph-node{transition:r .2s ease,opacity .2s ease;cursor:pointer}
-.graph-node:hover{r:6}
-.empty-state-icon{opacity:.15}
-@media(prefers-reduced-motion:reduce){*{animation-duration:0s!important;transition-duration:0s!important}}
+  :root { --sat: env(safe-area-inset-top); --sab: env(safe-area-inset-bottom); }
+  * { -webkit-tap-highlight-color: transparent; }
+  html, body { font-family: 'Hind Siliguri', sans-serif; overscroll-behavior: none; }
+  body { background:#f1f5f9; }
+  html.dark body { background:#0b1120; }
+
+  /* Scrollbar hide */
+  .no-scrollbar::-webkit-scrollbar { display:none; }
+  .no-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
+
+  /* Bottom sheet */
+  #sheetOverlay { transition: opacity .3s ease; }
+  #sheet { transition: transform .38s cubic-bezier(.16,1,.3,1); transform: translateY(100%); }
+  #sheet.open { transform: translateY(0); }
+
+  /* Page transitions */
+  .page { animation: fadeUp .35s ease; }
+  @keyframes fadeUp { from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+
+  /* Card glass */
+  .glass { backdrop-filter: blur(14px); }
+
+  /* FAB pulse */
+  .fab-shadow { box-shadow: 0 10px 30px -6px rgba(79,70,229,.55); }
+
+  /* Segment control */
+  .seg-btn.active { background:#4f46e5; color:#fff; box-shadow:0 4px 12px -2px rgba(79,70,229,.5); }
+
+  /* Toast */
+  #toast { transition: all .35s cubic-bezier(.16,1,.3,1); }
+
+  /* SVG path draw */
+  .trend-line { transition: all .5s ease; }
+
+  /* Input focus */
+  input:focus, select:focus { outline:none; }
+
+  /* smooth */
+  .tap { transition: transform .12s ease; }
+  .tap:active { transform: scale(.95); }
 </style>
 </head>
-<body class="dark:bg-dark-bg light:bg-light-bg dark:text-dark-text light:text-light-text font-bn">
 
-<!-- টোস্ট বার্তা -->
-<div id="toast" class="toast fixed top-4 left-1/2 -translate-x-1/2 z-[200] px-5 py-3 rounded-xl text-sm font-medium shadow-xl dark:bg-dark-elevated light:bg-white dark:border dark:border-dark-border light:border-light-border"></div>
+<body class="text-slate-800 dark:text-slate-100 select-none">
 
-<!-- কনফার্মেশন মোডাল -->
-<div id="confirmModal" class="confirm-modal fixed inset-0 z-[150] flex items-center justify-center p-6">
-  <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeConfirm()"></div>
-  <div class="confirm-box relative z-10 w-full max-w-sm p-6 rounded-2xl dark:bg-dark-card light:bg-white shadow-2xl dark:border dark:border-dark-border light:border-light-border">
-    <h3 id="confirmTitle" class="text-lg font-bold mb-2"></h3>
-    <p id="confirmMsg" class="text-sm dark:text-dark-muted light:text-light-muted mb-6"></p>
-    <div class="flex gap-3">
-      <button onclick="closeConfirm()" class="flex-1 py-2.5 rounded-xl text-sm font-semibold dark:bg-dark-elevated light:bg-light-elevated dark:text-dark-text light:text-light-text border dark:border-dark-border light:border-light-border">বাতিল</button>
-      <button id="confirmBtn" class="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-red-500 text-white hover:bg-red-600 transition-colors">নিশ্চিত করুন</button>
-    </div>
-  </div>
-</div>
+<!-- ============ APP SHELL ============ -->
+<div id="app" class="max-w-md mx-auto min-h-screen relative pb-28" style="padding-top:var(--sat);">
 
-<!-- মূল অ্যাপ কন্টেইনার -->
-<div id="app" class="flex flex-col h-full">
-
-  <!-- হেডার -->
-  <header class="safe-top flex items-center justify-between px-5 pb-3 shrink-0">
+  <!-- Header -->
+  <header class="px-5 pt-5 pb-2 flex items-center justify-between">
     <div>
+      <p class="text-xs text-slate-400 font-medium" id="greetDate"></p>
       <h1 class="text-xl font-bold tracking-tight">আয়-ব্যয় হিসাব</h1>
-      <p class="text-xs dark:text-dark-muted light:text-light-muted mt-0.5" id="headerDate"></p>
     </div>
-    <div class="w-9 h-9 rounded-full dark:bg-dark-accent/15 light:bg-light-accent/15 flex items-center justify-center">
-      <i data-lucide="wallet" class="w-4.5 h-4.5 dark:text-dark-accent light:text-light-accent"></i>
+    <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center fab-shadow">
+      <i data-lucide="wallet" class="w-5 h-5 text-white"></i>
     </div>
   </header>
 
-  <!-- ট্যাব কন্টেন্ট এরিয়া -->
-  <main class="flex-1 overflow-y-auto overflow-x-hidden pb-24 px-5" id="mainContent">
+  <!-- ============ PAGES CONTAINER ============ -->
+  <main id="pages" class="px-4">
 
-    <!-- হোম ট্যাব -->
-    <section id="tab-home" class="tab-content active">
-      <!-- পরিসংখ্যান কার্ড -->
-      <div class="grid grid-cols-3 gap-3 mb-5">
-        <div class="stat-card col-span-3 p-4 rounded-2xl dark:bg-dark-card light:bg-light-card dark:border dark:border-dark-border light:border-light-border relative overflow-hidden">
-          <div class="absolute top-0 right-0 w-24 h-24 rounded-full dark:bg-dark-accent/5 light:bg-light-accent/5 -translate-y-1/2 translate-x-1/2"></div>
-          <p class="text-xs dark:text-dark-muted light:text-light-muted font-medium mb-1">মোট জমা</p>
-          <p class="text-2xl font-bold tracking-tight" id="statBalance">৳ ০.০০</p>
-        </div>
-        <div class="stat-card p-3.5 rounded-2xl dark:bg-dark-card light:bg-light-card dark:border dark:border-dark-border light:border-light-border">
-          <div class="w-8 h-8 rounded-lg dark:bg-dark-income/10 light:bg-light-income/10 flex items-center justify-center mb-2">
-            <i data-lucide="trending-up" class="w-4 h-4 dark:text-dark-income light:text-light-income"></i>
+    <!-- ---------- HOME ---------- -->
+    <section id="page-home" class="page">
+      <!-- Balance Card -->
+      <div class="rounded-3xl p-5 bg-gradient-to-br from-brand-600 via-brand-600 to-brand-700 text-white fab-shadow relative overflow-hidden mt-2">
+        <div class="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full"></div>
+        <div class="absolute -right-2 top-10 w-20 h-20 bg-white/10 rounded-full"></div>
+        <p class="text-white/70 text-sm font-medium">মোট ব্যালেন্স</p>
+        <h2 class="text-3xl font-bold mt-1" id="statBalance">৳ ০.০০</h2>
+        <div class="flex gap-3 mt-5">
+          <div class="flex-1 bg-white/15 glass rounded-2xl p-3">
+            <div class="flex items-center gap-1.5 text-white/80 text-xs"><i data-lucide="arrow-down-left" class="w-3.5 h-3.5"></i> আয়</div>
+            <p class="font-semibold text-base mt-0.5" id="statIncome">৳ ০.০০</p>
           </div>
-          <p class="text-[10px] dark:text-dark-muted light:text-light-muted font-medium">আয়</p>
-          <p class="text-sm font-bold mt-0.5 dark:text-dark-income light:text-light-income" id="statIncome">৳ ০</p>
-        </div>
-        <div class="stat-card p-3.5 rounded-2xl dark:bg-dark-card light:bg-light-card dark:border dark:border-dark-border light:border-light-border">
-          <div class="w-8 h-8 rounded-lg dark:bg-dark-expense/10 light:bg-light-expense/10 flex items-center justify-center mb-2">
-            <i data-lucide="trending-down" class="w-4 h-4 dark:text-dark-expense light:text-light-expense"></i>
+          <div class="flex-1 bg-white/15 glass rounded-2xl p-3">
+            <div class="flex items-center gap-1.5 text-white/80 text-xs"><i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> ব্যয়</div>
+            <p class="font-semibold text-base mt-0.5" id="statExpense">৳ ০.০০</p>
           </div>
-          <p class="text-[10px] dark:text-dark-muted light:text-light-muted font-medium">ব্যয়</p>
-          <p class="text-sm font-bold mt-0.5 dark:text-dark-expense light:text-light-expense" id="statExpense">৳ ০</p>
         </div>
       </div>
 
-      <!-- ট্রেন্ড গ্রাফ -->
-      <div class="p-4 rounded-2xl dark:bg-dark-card light:bg-light-card dark:border dark:border-dark-border light:border-light-border mb-5">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-sm font-bold">ট্রেন্ড গ্রাফ</h2>
-          <div class="flex rounded-xl p-0.5 dark:bg-dark-bg light:bg-light-bg gap-0.5">
-            <button class="segment-btn active text-[11px] font-semibold px-3 py-1.5 rounded-lg" data-period="week" onclick="setGraphPeriod('week',this)">সপ্তাহ</button>
-            <button class="segment-btn text-[11px] font-semibold px-3 py-1.5 rounded-lg dark:text-dark-muted light:text-light-muted" data-period="month" onclick="setGraphPeriod('month',this)">মাস</button>
-            <button class="segment-btn text-[11px] font-semibold px-3 py-1.5 rounded-lg dark:text-dark-muted light:text-light-muted" data-period="year" onclick="setGraphPeriod('year',this)">বছর</button>
-          </div>
-        </div>
-        <div id="graphContainer" class="w-full" style="height:180px;position:relative">
-          <svg id="trendGraph" width="100%" height="100%" viewBox="0 0 320 180" preserveAspectRatio="none"></svg>
-        </div>
-        <div id="graphTooltip" class="hidden absolute px-3 py-1.5 rounded-lg text-xs font-semibold dark:bg-dark-elevated light:bg-light-elevated dark:border dark:border-dark-border light:border-light-border shadow-lg pointer-events-none z-10" style="transform:translate(-50%,-120%)"></div>
-      </div>
-
-      <!-- সাম্প্রতিক লেনদেন -->
-      <div class="mb-4">
+      <!-- Graph -->
+      <div class="rounded-3xl p-4 bg-white dark:bg-slate-800/60 mt-4 shadow-sm border border-slate-100 dark:border-slate-700/50">
         <div class="flex items-center justify-between mb-3">
-          <h2 class="text-sm font-bold">সাম্প্রতিক লেনদেন</h2>
-          <button onclick="switchTab('history')" class="text-[11px] font-semibold dark:text-dark-accent light:text-light-accent">সব দেখুন</button>
+          <h3 class="font-semibold text-sm">আয়-ব্যয়ের ধারা</h3>
+          <div class="flex gap-1 bg-slate-100 dark:bg-slate-700/50 rounded-xl p-1">
+            <button data-range="week" class="seg-btn active text-xs px-3 py-1 rounded-lg font-medium tap">সপ্তাহ</button>
+            <button data-range="month" class="seg-btn text-xs px-3 py-1 rounded-lg font-medium tap">মাস</button>
+            <button data-range="year" class="seg-btn text-xs px-3 py-1 rounded-lg font-medium tap">বছর</button>
+          </div>
         </div>
-        <div id="recentList" class="space-y-2.5"></div>
+        <div id="chartWrap" class="w-full"></div>
+        <div class="flex items-center justify-center gap-5 mt-3 text-xs text-slate-500 dark:text-slate-400">
+          <span class="flex items-center gap-1.5"><span class="w-3 h-1.5 rounded-full bg-emerald-500"></span> আয়</span>
+          <span class="flex items-center gap-1.5"><span class="w-3 h-1.5 rounded-full bg-rose-500"></span> ব্যয়</span>
+        </div>
+      </div>
+
+      <!-- Recent -->
+      <div class="mt-5">
+        <div class="flex items-center justify-between mb-2 px-1">
+          <h3 class="font-semibold text-sm">সাম্প্রতিক লেনদেন</h3>
+          <button onclick="switchTab('history')" class="text-xs text-brand-500 font-medium">সব দেখুন</button>
+        </div>
+        <div id="recentList" class="space-y-2"></div>
       </div>
     </section>
 
-    <!-- ইতিহাস ট্যাব -->
-    <section id="tab-history" class="tab-content">
-      <div class="flex flex-wrap gap-2 mb-4">
-        <input type="date" id="filterDate" class="flex-1 min-w-[140px] px-3 py-2.5 rounded-xl text-sm dark:bg-dark-card light:bg-light-card dark:border dark:border-dark-border light:border-light-border dark:text-dark-text light:text-light-text focus:outline-none focus:ring-2 focus:ring-dark-accent/40" onchange="renderHistory()">
-        <select id="filterType" class="px-3 py-2.5 rounded-xl text-sm dark:bg-dark-card light:bg-light-card dark:border dark:border-dark-border light:border-light-border dark:text-dark-text light:text-light-text focus:outline-none" onchange="renderHistory()">
-          <option value="all">সব রেকর্ড</option>
-          <option value="income">শুধুমাত্র আয়</option>
-          <option value="expense">শুধুমাত্র ব্যয়</option>
-        </select>
-        <button onclick="resetFilters()" class="px-3 py-2.5 rounded-xl text-sm font-semibold dark:bg-dark-elevated light:bg-light-elevated dark:border dark:border-dark-border light:border-light-border dark:text-dark-muted light:text-light-muted flex items-center gap-1.5 hover:opacity-80 transition-opacity">
-          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> রিসেট
-        </button>
+    <!-- ---------- HISTORY ---------- -->
+    <section id="page-history" class="page hidden">
+      <h2 class="text-lg font-bold mt-2 mb-3 px-1">সম্পূর্ণ ইতিহাস</h2>
+      <div class="rounded-2xl p-3 bg-white dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/50 space-y-2.5">
+        <input type="date" id="filterDate" class="w-full bg-slate-100 dark:bg-slate-700/50 rounded-xl px-3 py-2.5 text-sm">
+        <div class="flex gap-2">
+          <select id="filterType" class="flex-1 bg-slate-100 dark:bg-slate-700/50 rounded-xl px-3 py-2.5 text-sm">
+            <option value="all">সব রেকর্ড</option>
+            <option value="income">শুধুমাত্র আয়</option>
+            <option value="expense">শুধুমাত্র ব্যয়</option>
+          </select>
+          <button id="resetFilter" class="px-4 py-2.5 bg-rose-500/10 text-rose-500 rounded-xl text-sm font-medium tap flex items-center gap-1.5">
+            <i data-lucide="rotate-ccw" class="w-4 h-4"></i> রিসেট
+          </button>
+        </div>
       </div>
-      <div id="historyList" class="space-y-2.5"></div>
+      <div id="historyList" class="space-y-2 mt-4"></div>
     </section>
 
-    <!-- এক্সপোর্ট ট্যাব -->
-    <section id="tab-export" class="tab-content">
-      <div class="p-5 rounded-2xl dark:bg-dark-card light:bg-light-card dark:border dark:border-dark-border light:border-light-border mb-4">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-10 h-10 rounded-xl dark:bg-dark-accent/10 light:bg-light-accent/10 flex items-center justify-center">
-            <i data-lucide="download" class="w-5 h-5 dark:text-dark-accent light:text-light-accent"></i>
-          </div>
-          <div>
-            <h2 class="text-sm font-bold">রিপোর্ট এক্সপোর্ট</h2>
-            <p class="text-[11px] dark:text-dark-muted light:text-light-muted">আপনার হিসাব তথ্য ডাউনলোড করুন</p>
-          </div>
+    <!-- ---------- EXPORT ---------- -->
+    <section id="page-export" class="page hidden">
+      <h2 class="text-lg font-bold mt-2 mb-3 px-1">ডেটা এক্সপোর্ট</h2>
+      <div class="rounded-3xl p-5 bg-white dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/50">
+        <div class="w-14 h-14 rounded-2xl bg-brand-500/10 flex items-center justify-center mb-4">
+          <i data-lucide="download-cloud" class="w-7 h-7 text-brand-500"></i>
         </div>
-        <select id="exportFormat" class="w-full px-4 py-3 rounded-xl text-sm font-medium dark:bg-dark-bg light:bg-light-bg dark:border dark:border-dark-border light:border-light-border dark:text-dark-text light:text-light-text focus:outline-none mb-3">
-          <option value="pdf">PDF ডকুমেন্ট</option>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">আপনার সকল লেনদেন অফলাইনে সংরক্ষণ করুন। ফরম্যাট নির্বাচন করে ডাউনলোড করুন।</p>
+        <label class="text-xs font-medium text-slate-400">ফরম্যাট নির্বাচন করুন</label>
+        <select id="exportFormat" class="w-full bg-slate-100 dark:bg-slate-700/50 rounded-xl px-3 py-3 text-sm mt-1.5 mb-4">
+          <option value="pdf">PDF রিপোর্ট (প্রিন্ট)</option>
+          <option value="excel">Excel স্প্রেডশিট (.xls)</option>
           <option value="word">Word ডকুমেন্ট (.doc)</option>
-          <option value="excel">Excel স্প্রেডশিট (.csv)</option>
         </select>
-        <button onclick="exportData()" class="w-full py-3 rounded-xl text-sm font-bold text-white dark:bg-dark-accent light:bg-light-accent hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
-          <i data-lucide="file-down" class="w-4 h-4"></i> এক্সপোর্ট করুন
+        <button id="exportBtn" class="w-full py-3.5 bg-gradient-to-r from-brand-500 to-brand-700 text-white rounded-2xl font-semibold tap fab-shadow flex items-center justify-center gap-2">
+          <i data-lucide="file-down" class="w-5 h-5"></i> এক্সপোর্ট করুন
         </button>
       </div>
-      <div class="p-4 rounded-2xl dark:bg-dark-card light:bg-light-card dark:border dark:border-dark-border light:border-light-border">
-        <h3 class="text-xs font-bold mb-3 dark:text-dark-muted light:text-light-muted uppercase tracking-wider">এক্সপোর্ট তথ্য</h3>
-        <div class="space-y-2.5 text-sm">
-          <div class="flex justify-between"><span class="dark:text-dark-muted light:text-light-muted">মোট লেনদেন</span><span class="font-semibold" id="expTotalTx">০</span></div>
-          <div class="flex justify-between"><span class="dark:text-dark-muted light:text-light-muted">প্রথম লেনদেন</span><span class="font-semibold" id="expFirstTx">নেই</span></div>
-          <div class="flex justify-between"><span class="dark:text-dark-muted light:text-light-muted">সর্বশেষ লেনদেন</span><span class="font-semibold" id="expLastTx">নেই</span></div>
-        </div>
+      <div class="rounded-2xl p-4 bg-white dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/50 mt-4">
+        <p class="text-xs text-slate-400">মোট রেকর্ড</p>
+        <p class="text-2xl font-bold mt-1" id="exportCount">০</p>
       </div>
     </section>
 
-    <!-- সেটিংস ট্যাব -->
-    <section id="tab-settings" class="tab-content">
-      <!-- থিম মোড -->
-      <div class="p-4 rounded-2xl dark:bg-dark-card light:bg-light-card dark:border dark:border-dark-border light:border-light-border mb-4">
-        <h2 class="text-sm font-bold mb-3">ডিসপ্লে মোড</h2>
+    <!-- ---------- SETTINGS ---------- -->
+    <section id="page-settings" class="page hidden">
+      <h2 class="text-lg font-bold mt-2 mb-3 px-1">সেটিংস</h2>
+
+      <!-- Theme -->
+      <div class="rounded-2xl p-4 bg-white dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/50 mb-4">
+        <h3 class="font-semibold text-sm mb-3 flex items-center gap-2"><i data-lucide="palette" class="w-4 h-4 text-brand-500"></i> ডিসপ্লে থিম</h3>
         <div class="grid grid-cols-3 gap-2">
-          <button onclick="setTheme('light')" id="themeLight" class="theme-opt py-3 rounded-xl text-xs font-semibold border-2 transition-all dark:border-dark-border light:border-light-border dark:text-dark-muted light:text-light-muted flex flex-col items-center gap-1.5">
-            <i data-lucide="sun" class="w-5 h-5"></i>লাইট
+          <button data-theme="light" class="theme-btn flex flex-col items-center gap-1.5 py-3 rounded-xl bg-slate-100 dark:bg-slate-700/50 tap">
+            <i data-lucide="sun" class="w-5 h-5"></i><span class="text-xs font-medium">লাইট</span>
           </button>
-          <button onclick="setTheme('dark')" id="themeDark" class="theme-opt py-3 rounded-xl text-xs font-semibold border-2 transition-all dark:border-dark-border light:border-light-border dark:text-dark-muted light:text-light-muted flex flex-col items-center gap-1.5">
-            <i data-lucide="moon" class="w-5 h-5"></i>ডার্ক
+          <button data-theme="dark" class="theme-btn flex flex-col items-center gap-1.5 py-3 rounded-xl bg-slate-100 dark:bg-slate-700/50 tap">
+            <i data-lucide="moon" class="w-5 h-5"></i><span class="text-xs font-medium">ডার্ক</span>
           </button>
-          <button onclick="setTheme('system')" id="themeSystem" class="theme-opt py-3 rounded-xl text-xs font-semibold border-2 transition-all dark:border-dark-border light:border-light-border dark:text-dark-muted light:text-light-muted flex flex-col items-center gap-1.5">
-            <i data-lucide="monitor" class="w-5 h-5"></i>সিস্টেম
+          <button data-theme="system" class="theme-btn flex flex-col items-center gap-1.5 py-3 rounded-xl bg-slate-100 dark:bg-slate-700/50 tap">
+            <i data-lucide="monitor" class="w-5 h-5"></i><span class="text-xs font-medium">সিস্টেম</span>
           </button>
         </div>
       </div>
 
-      <!-- আয়ের ক্যাটেগরি -->
-      <div class="p-4 rounded-2xl dark:bg-dark-card light:bg-light-card dark:border dark:border-dark-border light:border-light-border mb-4">
-        <h2 class="text-sm font-bold mb-3">আয়ের ক্যাটেগরি</h2>
-        <div id="incomeCatList" class="space-y-2 mb-3"></div>
-        <div class="flex gap-2">
-          <input type="text" id="newIncomeCat" placeholder="নতুন ক্যাটেগরি" class="flex-1 px-3 py-2.5 rounded-xl text-sm dark:bg-dark-bg light:bg-light-bg dark:border dark:border-dark-border light:border-light-border dark:text-dark-text light:text-light-text focus:outline-none focus:ring-2 focus:ring-dark-income/40">
-          <button onclick="addCategory('income')" class="px-4 py-2.5 rounded-xl text-sm font-bold text-white dark:bg-dark-income light:bg-light-income hover:opacity-90 transition-opacity">যোগ</button>
+      <!-- Category Manager -->
+      <div class="rounded-2xl p-4 bg-white dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/50 mb-4">
+        <h3 class="font-semibold text-sm mb-3 flex items-center gap-2"><i data-lucide="tags" class="w-4 h-4 text-brand-500"></i> ক্যাটাগরি ম্যানেজার</h3>
+        <div class="flex gap-2 mb-3">
+          <input id="catInput" type="text" placeholder="নতুন ক্যাটাগরি" class="flex-1 bg-slate-100 dark:bg-slate-700/50 rounded-xl px-3 py-2.5 text-sm">
+          <select id="catType" class="bg-slate-100 dark:bg-slate-700/50 rounded-xl px-2 py-2.5 text-sm">
+            <option value="income">আয়</option>
+            <option value="expense">ব্যয়</option>
+          </select>
+          <button id="addCat" class="w-11 bg-brand-500 text-white rounded-xl flex items-center justify-center tap"><i data-lucide="plus" class="w-5 h-5"></i></button>
         </div>
+        <div id="catList" class="flex flex-wrap gap-2"></div>
       </div>
 
-      <!-- ব্যয়ের ক্যাটেগরি -->
-      <div class="p-4 rounded-2xl dark:bg-dark-card light:bg-light-card dark:border dark:border-dark-border light:border-light-border mb-4">
-        <h2 class="text-sm font-bold mb-3">ব্যয়ের ক্যাটেগরি</h2>
-        <div id="expenseCatList" class="space-y-2 mb-3"></div>
-        <div class="flex gap-2">
-          <input type="text" id="newExpenseCat" placeholder="নতুন ক্যাটেগরি" class="flex-1 px-3 py-2.5 rounded-xl text-sm dark:bg-dark-bg light:bg-light-bg dark:border dark:border-dark-border light:border-light-border dark:text-dark-text light:text-light-text focus:outline-none focus:ring-2 focus:ring-dark-expense/40">
-          <button onclick="addCategory('expense')" class="px-4 py-2.5 rounded-xl text-sm font-bold text-white dark:bg-dark-expense light:bg-light-expense hover:opacity-90 transition-opacity">যোগ</button>
-        </div>
+      <!-- Danger Zone -->
+      <div class="rounded-2xl p-4 bg-rose-500/5 border border-rose-500/20">
+        <h3 class="font-semibold text-sm mb-1 flex items-center gap-2 text-rose-500"><i data-lucide="alert-triangle" class="w-4 h-4"></i> ডেঞ্জার জোন</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">সকল লেনদেন ও ডেটা স্থায়ীভাবে মুছে যাবে।</p>
+        <button id="resetAll" class="w-full py-3 bg-rose-500 text-white rounded-xl font-semibold text-sm tap">সব ডেটা মুছুন</button>
       </div>
 
-      <!-- ডেঞ্জার জোন -->
-      <div class="p-4 rounded-2xl border-2 border-red-500/20 dark:bg-red-500/5 light:bg-red-50 mb-4">
-        <h2 class="text-sm font-bold text-red-500 mb-2">সতর্কতা অঞ্চল</h2>
-        <p class="text-[11px] dark:text-dark-muted light:text-light-muted mb-3">সকল লেনদেন, ক্যাটেগরি ও সেটিংস মুছে ফেলা হবে। এই কাজ পূর্বাবস্থায় ফেরানো যাবে না।</p>
-        <button onclick="confirmAction('সকল ডেটা মুছুন','আপনি কি নিশ্চিত যে সকল ডেটা মুছে ফেলতে চান?',resetAllData)" class="w-full py-2.5 rounded-xl text-sm font-bold bg-red-500 text-white hover:bg-red-600 transition-colors">সকল ডেটা মুছুন</button>
-      </div>
-
-      <p class="text-center text-[10px] dark:text-dark-muted/50 light:text-light-muted/50 pb-4">আয়-ব্যয় হিসাব প্রো v১.০.০</p>
+      <p class="text-center text-xs text-slate-400 mt-6">সংস্করণ ১.০ • অফলাইন সুরক্ষিত</p>
     </section>
-  </main>
 
-  <!-- বটম নেভিগেশন -->
-  <nav class="fixed bottom-0 left-0 right-0 safe-bottom dark:bg-dark-card/95 light:bg-light-card/95 backdrop-blur-xl dark:border-t dark:border-dark-border light:border-t light:border-light-border z-50">
-    <div class="flex items-end justify-around px-2 pb-1 pt-2 max-w-lg mx-auto">
-      <button class="nav-item active flex flex-col items-center gap-0.5 px-3 py-1" onclick="switchTab('home')" data-tab="home">
-        <i data-lucide="layout-dashboard" class="nav-icon w-5 h-5"></i>
-        <span class="nav-label text-[10px] font-semibold">হোম</span>
-      </button>
-      <button class="nav-item flex flex-col items-center gap-0.5 px-3 py-1" onclick="switchTab('history')" data-tab="history">
-        <i data-lucide="clock" class="nav-icon w-5 h-5 dark:text-dark-muted light:text-light-muted"></i>
-        <span class="nav-label text-[10px] font-semibold dark:text-dark-muted light:text-light-muted">ইতিহাস</span>
-      </button>
-      <button onclick="openSheet()" class="relative -mt-6 w-14 h-14 rounded-2xl dark:bg-dark-accent light:bg-light-accent text-white flex items-center justify-center shadow-lg shadow-dark-accent/30 hover:shadow-xl hover:shadow-dark-accent/40 transition-all active:scale-90" aria-label="নতুন লেনদেন যোগ করুন">
-        <span class="fab-pulse absolute inset-0 rounded-2xl dark:bg-dark-accent light:bg-light-accent opacity-30"></span>
-        <i data-lucide="plus" class="w-6 h-6 relative z-10"></i>
-      </button>
-      <button class="nav-item flex flex-col items-center gap-0.5 px-3 py-1" onclick="switchTab('export')" data-tab="export">
-        <i data-lucide="download" class="nav-icon w-5 h-5 dark:text-dark-muted light:text-light-muted"></i>
-        <span class="nav-label text-[10px] font-semibold dark:text-dark-muted light:text-light-muted">এক্সপোর্ট</span>
-      </button>
-      <button class="nav-item flex flex-col items-center gap-0.5 px-3 py-1" onclick="switchTab('settings')" data-tab="settings">
-        <i data-lucide="settings" class="nav-icon w-5 h-5 dark:text-dark-muted light:text-light-muted"></i>
-        <span class="nav-label text-[10px] font-semibold dark:text-dark-muted light:text-light-muted">সেটিংস</span>
-      </button>
-    </div>
-  </nav>
+  </main>
 </div>
 
-<!-- বটম শিট ওভারলে -->
-<div id="sheetOverlay" class="sheet-overlay fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm" onclick="closeSheet()"></div>
+<!-- ============ FAB ============ -->
+<button id="fab" class="fixed z-40 bottom-[calc(1.4rem+var(--sab))] left-1/2 -translate-x-1/2 w-16 h-16 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-white flex items-center justify-center fab-shadow tap">
+  <i data-lucide="plus" class="w-8 h-8"></i>
+</button>
 
-<!-- বটম শিট - লেনদেন ফর্ম -->
-<div id="bottomSheet" class="bottom-sheet fixed bottom-0 left-0 right-0 z-[110] max-h-[85vh] safe-bottom dark:bg-dark-card light:bg-light-card rounded-t-3xl dark:border-t dark:border-dark-border light:border-t light:border-light-border shadow-2xl flex flex-col">
-  <div class="flex justify-center pt-3 pb-1 shrink-0">
-    <div class="w-10 h-1 rounded-full dark:bg-dark-border light:bg-light-border"></div>
-  </div>
-  <div class="px-5 pb-3 shrink-0">
-    <h2 class="text-base font-bold" id="sheetTitle">নতুন লেনদেন</h2>
-  </div>
-  <div class="flex-1 overflow-y-auto px-5 pb-5">
-    <input type="hidden" id="editId" value="">
-    <!-- টাইপ টগল -->
-    <div class="grid grid-cols-2 gap-2 mb-4">
-      <button id="typeIncome" onclick="setTxType('income')" class="py-2.5 rounded-xl text-sm font-bold border-2 transition-all flex items-center justify-center gap-1.5 dark:border-dark-income dark:bg-dark-income/10 dark:text-dark-income light:border-light-income light:bg-light-income/10 light:text-light-income">
-        <i data-lucide="arrow-up-right" class="w-4 h-4"></i>আয়
-      </button>
-      <button id="typeExpense" onclick="setTxType('expense')" class="py-2.5 rounded-xl text-sm font-bold border-2 transition-all flex items-center justify-center gap-1.5 dark:border-dark-border dark:text-dark-muted light:border-light-border light:text-light-muted">
-        <i data-lucide="arrow-down-right" class="w-4 h-4"></i>ব্যয়
-      </button>
-    </div>
-    <!-- পরিমাণ -->
-    <div class="mb-3">
-      <label class="text-[11px] font-semibold dark:text-dark-muted light:text-light-muted mb-1.5 block">পরিমাণ (৳)</label>
-      <input type="number" id="txAmount" placeholder="০.০০" min="0" step="0.01" class="w-full px-4 py-3 rounded-xl text-lg font-bold dark:bg-dark-bg light:bg-light-bg dark:border dark:border-dark-border light:border-light-border dark:text-dark-text light:text-light-text focus:outline-none focus:ring-2 focus:ring-dark-accent/40" inputmode="decimal">
-    </div>
-    <!-- ক্যাটেগরি -->
-    <div class="mb-3">
-      <label class="text-[11px] font-semibold dark:text-dark-muted light:text-light-muted mb-1.5 block">ক্যাটেগরি</label>
-      <select id="txCategory" class="w-full px-4 py-3 rounded-xl text-sm dark:bg-dark-bg light:bg-light-bg dark:border dark:border-dark-border light:border-light-border dark:text-dark-text light:text-light-text focus:outline-none"></select>
-    </div>
-    <!-- তারিখ -->
-    <div class="mb-3">
-      <label class="text-[11px] font-semibold dark:text-dark-muted light:text-light-muted mb-1.5 block">তারিখ</label>
-      <input type="date" id="txDate" class="w-full px-4 py-3 rounded-xl text-sm dark:bg-dark-bg light:bg-light-bg dark:border dark:border-dark-border light:border-light-border dark:text-dark-text light:text-light-text focus:outline-none focus:ring-2 focus:ring-dark-accent/40">
-    </div>
-    <!-- নোট -->
-    <div class="mb-5">
-      <label class="text-[11px] font-semibold dark:text-dark-muted light:text-light-muted mb-1.5 block">নোট (ঐচ্ছিক)</label>
-      <input type="text" id="txNote" placeholder="বিবরণ লিখুন..." class="w-full px-4 py-3 rounded-xl text-sm dark:bg-dark-bg light:bg-light-bg dark:border dark:border-dark-border light:border-light-border dark:text-dark-text light:text-light-text focus:outline-none focus:ring-2 focus:ring-dark-accent/40">
-    </div>
-    <!-- সেভ বাটন -->
-    <button onclick="saveTransaction()" class="w-full py-3.5 rounded-xl text-sm font-bold text-white dark:bg-dark-accent light:bg-light-accent hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
-      <i data-lucide="check" class="w-4 h-4"></i>সংরক্ষণ করুন
+<!-- ============ BOTTOM NAV ============ -->
+<nav class="fixed bottom-0 left-0 right-0 z-30 max-w-md mx-auto">
+  <div class="mx-3 mb-[calc(0.5rem+var(--sab))] bg-white/90 dark:bg-slate-800/90 glass rounded-3xl shadow-xl border border-slate-100 dark:border-slate-700/50 flex items-center justify-around px-2 py-2.5">
+    <button onclick="switchTab('home')" data-nav="home" class="nav-btn flex flex-col items-center gap-0.5 w-14 text-brand-500">
+      <i data-lucide="home" class="w-5 h-5"></i><span class="text-[10px] font-medium">হোম</span>
+    </button>
+    <button onclick="switchTab('history')" data-nav="history" class="nav-btn flex flex-col items-center gap-0.5 w-14 text-slate-400">
+      <i data-lucide="history" class="w-5 h-5"></i><span class="text-[10px] font-medium">ইতিহাস</span>
+    </button>
+    <div class="w-14"></div>
+    <button onclick="switchTab('export')" data-nav="export" class="nav-btn flex flex-col items-center gap-0.5 w-14 text-slate-400">
+      <i data-lucide="download" class="w-5 h-5"></i><span class="text-[10px] font-medium">এক্সপোর্ট</span>
+    </button>
+    <button onclick="switchTab('settings')" data-nav="settings" class="nav-btn flex flex-col items-center gap-0.5 w-14 text-slate-400">
+      <i data-lucide="settings" class="w-5 h-5"></i><span class="text-[10px] font-medium">সেটিংস</span>
     </button>
   </div>
+</nav>
+
+<!-- ============ BOTTOM SHEET ============ -->
+<div id="sheetOverlay" class="fixed inset-0 z-50 bg-black/50 opacity-0 pointer-events-none">
+  <div id="sheet" class="absolute bottom-0 left-0 right-0 max-w-md mx-auto bg-white dark:bg-slate-800 rounded-t-3xl p-5" style="padding-bottom:calc(1.5rem + var(--sab));">
+    <div class="w-10 h-1 bg-slate-300 dark:bg-slate-600 rounded-full mx-auto mb-4"></div>
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-bold text-lg" id="sheetTitle">নতুন লেনদেন</h3>
+      <button id="closeSheet" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center tap"><i data-lucide="x" class="w-4 h-4"></i></button>
+    </div>
+
+    <!-- Type toggle -->
+    <div class="grid grid-cols-2 gap-2 mb-4 bg-slate-100 dark:bg-slate-700/50 rounded-2xl p-1">
+      <button id="typeIncome" class="type-toggle py-2.5 rounded-xl text-sm font-semibold">আয়</button>
+      <button id="typeExpense" class="type-toggle py-2.5 rounded-xl text-sm font-semibold">ব্যয়</button>
+    </div>
+
+    <div class="space-y-3">
+      <div>
+        <label class="text-xs font-medium text-slate-400">পরিমাণ (৳)</label>
+        <input id="inAmount" type="number" inputmode="decimal" placeholder="0" class="w-full bg-slate-100 dark:bg-slate-700/50 rounded-xl px-4 py-3 text-lg font-semibold mt-1">
+      </div>
+      <div>
+        <label class="text-xs font-medium text-slate-400">ক্যাটাগরি</label>
+        <select id="inCategory" class="w-full bg-slate-100 dark:bg-slate-700/50 rounded-xl px-4 py-3 text-sm mt-1"></select>
+      </div>
+      <div>
+        <label class="text-xs font-medium text-slate-400">বিবরণ (ঐচ্ছিক)</label>
+        <input id="inNote" type="text" placeholder="নোট লিখুন" class="w-full bg-slate-100 dark:bg-slate-700/50 rounded-xl px-4 py-3 text-sm mt-1">
+      </div>
+      <div>
+        <label class="text-xs font-medium text-slate-400">তারিখ</label>
+        <input id="inDate" type="date" class="w-full bg-slate-100 dark:bg-slate-700/50 rounded-xl px-4 py-3 text-sm mt-1">
+      </div>
+    </div>
+
+    <button id="saveTx" class="w-full py-3.5 mt-5 bg-gradient-to-r from-brand-500 to-brand-700 text-white rounded-2xl font-semibold tap fab-shadow">সংরক্ষণ করুন</button>
+  </div>
 </div>
 
+<!-- ============ TOAST ============ -->
+<div id="toast" class="fixed z-[60] top-4 left-1/2 -translate-x-1/2 opacity-0 pointer-events-none bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-4 py-2.5 rounded-xl text-sm font-medium shadow-lg" style="margin-top:var(--sat);"></div>
+
 <script>
-/* ========================================
-   আয়-ব্যয় হিসাব প্রো - কোর অ্যাপ ইঞ্জিন
-   ======================================== */
+/* ============================================================
+   আয়-ব্যয় হিসাব — Core Engine (Vanilla JS)
+   ============================================================ */
+'use strict';
 
-// ---- বাংলা ডিজিট কনভার্টার ----
-const BD = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
-function toBD(n) {
-  if (n === null || n === undefined || isNaN(n)) return '০';
-  const parts = Number(n).toFixed(2).split('.');
-  const intPart = String(Math.abs(parseInt(parts[0]))).split('').map(d => BD[parseInt(d)] || d).join('');
-  const decPart = parts[1] ? parts[1].split('').map(d => BD[parseInt(d)] || d).join('') : '০০';
-  return (n < 0 ? '-' : '') + intPart + '.' + decPart;
-}
-function formatBD(n) { return '৳ ' + toBD(n); }
-
-// ---- বাংলা তারিখ ফরম্যাটার ----
-function formatDateBN(dateStr) {
-  const d = new Date(dateStr + 'T00:00:00');
-  const months = ['জানু','ফেব','মার্চ','এপ্রি','মে','জুন','জুলা','আগ','সেপ্ট','অক্ট','নভ','ডিস'];
-  return toBD(d.getDate()) + ' ' + months[d.getMonth()] + ', ' + toBD(d.getFullYear());
-}
-function formatDateShortBN(dateStr) {
-  const d = new Date(dateStr + 'T00:00:00');
-  const months = ['জানু','ফেব','মার্চ','এপ্রি','মে','জুন','জুলা','আগ','সেপ্ট','অক্ট','নভ','ডিস'];
-  return toBD(d.getDate()) + ' ' + months[d.getMonth()];
-}
-function getTodayStr() {
-  const d = new Date();
-  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-}
-function getBengaliDateHeader() {
-  const d = new Date();
-  const days = ['রবিবার','সোমবার','মঙ্গলবার','বুধবার','বৃহস্পতিবার','শুক্রবার','শনিবার'];
-  const months = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
-  return days[d.getDay()] + ', ' + toBD(d.getDate()) + ' ' + months[d.getMonth()] + ' ' + toBD(d.getFullYear());
-}
-
-// ---- স্টোরেজ ইঞ্জিন ----
-function load(key, def) {
-  try { const v = localStorage.getItem(key); return v !== null ? JSON.parse(v) : def; }
-  catch(e) { return def; }
-}
-function save(key, val) {
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {}
-}
-
-// ---- ডিফল্ট ক্যাটেগরি ----
-const DEFAULT_CATS = {
-  income: ['বেতন','ব্যবসা','ফ্রিল্যান্স','সুদ','ভাড়া','অন্যান্য'],
-  expense: ['খাবার','পরিবহন','বিল','কেনাকাটা','চিকিৎসা','শিক্ষা','বিনোদন','অন্যান্য']
+const LS = {
+  tx: 'abh_transactions',
+  cat: 'abh_categories',
+  theme: 'abh_theme'
 };
 
-// ---- অ্যাপ স্টেট ----
+/* ---------- State ---------- */
 let state = {
-  transactions: load('tx', []),
-  categories: load('cats', { income: [...DEFAULT_CATS.income], expense: [...DEFAULT_CATS.expense] }),
-  theme: load('theme', 'system'),
-  graphPeriod: 'week',
-  currentTxType: 'income'
+  transactions: [],
+  categories: { income: [], expense: [] },
+  theme: 'system',
+  range: 'week',
+  txType: 'income'
 };
-let confirmCallback = null;
 
-function persist() {
-  save('tx', state.transactions);
-  save('cats', state.categories);
-  save('theme', state.theme);
+/* ---------- Storage helpers ---------- */
+function load() {
+  try { state.transactions = JSON.parse(localStorage.getItem(LS.tx)) || []; } catch(e){ state.transactions = []; }
+  try {
+    const c = JSON.parse(localStorage.getItem(LS.cat));
+    state.categories = (c && c.income && c.expense) ? c : defaultCats();
+  } catch(e){ state.categories = defaultCats(); }
+  state.theme = localStorage.getItem(LS.theme) || 'system';
 }
-
-// ---- থিম ইঞ্জিন ----
-function applyTheme(t) {
-  const html = document.documentElement;
-  const meta = document.querySelector('meta[name="theme-color"]');
-  if (t === 'dark') {
-    html.classList.add('dark'); html.classList.remove('light');
-    if (meta) meta.content = '#0d1117';
-  } else if (t === 'light') {
-    html.classList.add('light'); html.classList.remove('dark');
-    if (meta) meta.content = '#f4f1eb';
-  } else {
-    // সিস্টেম
-    if (window.matchMedia('(prefers-color-scheme:dark)').matches) {
-      html.classList.add('dark'); html.classList.remove('light');
-      if (meta) meta.content = '#0d1117';
-    } else {
-      html.classList.add('light'); html.classList.remove('dark');
-      if (meta) meta.content = '#f4f1eb';
-    }
-  }
-  updateThemeButtons();
-}
-function setTheme(t) {
-  state.theme = t; persist(); applyTheme(t);
-}
-function updateThemeButtons() {
-  const active = state.theme === 'system' ? (window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light') : state.theme;
-  document.querySelectorAll('.theme-opt').forEach(btn => {
-    const id = btn.id.replace('theme','').toLowerCase();
-    const isActive = id === active;
-    btn.classList.toggle('dark:border-dark-accent', isActive);
-    btn.classList.toggle('light:border-light-accent', isActive);
-    btn.classList.toggle('dark:text-dark-accent', isActive);
-    btn.classList.toggle('light:text-light-accent', isActive);
-    btn.classList.toggle('dark:border-dark-border', !isActive);
-    btn.classList.toggle('light:border-light-border', !isActive);
-    btn.classList.toggle('dark:text-dark-muted', !isActive);
-    btn.classList.toggle('light:text-light-muted', !isActive);
-  });
-}
-window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change', () => { if (state.theme === 'system') applyTheme('system'); });
-
-// ---- ট্যাব সুইচিং ----
-function switchTab(tab) {
-  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-  document.getElementById('tab-' + tab).classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(btn => {
-    const isActive = btn.dataset.tab === tab;
-    btn.classList.toggle('active', isActive);
-    const icon = btn.querySelector('.nav-icon');
-    const label = btn.querySelector('.nav-label');
-    if (icon) { icon.classList.toggle('dark:text-dark-muted', !isActive); icon.classList.toggle('light:text-light-muted', !isActive); }
-    if (label) { label.classList.toggle('dark:text-dark-muted', !isActive); label.classList.toggle('light:text-light-muted', !isActive); }
-  });
-  // ট্যাব পরিবর্তনে রেন্ডার
-  if (tab === 'home') renderHome();
-  if (tab === 'history') renderHistory();
-  if (tab === 'export') renderExportInfo();
-  if (tab === 'settings') renderCategories();
-  document.getElementById('mainContent').scrollTop = 0;
-}
-
-// ---- বটম শিট ----
-function openSheet(editTx) {
-  document.getElementById('sheetOverlay').classList.add('active');
-  document.getElementById('bottomSheet').classList.add('active');
-  if (editTx) {
-    document.getElementById('sheetTitle').textContent = 'লেনদেন সম্পাদনা';
-    document.getElementById('editId').value = editTx.id;
-    document.getElementById('txAmount').value = editTx.amount;
-    document.getElementById('txDate').value = editTx.date;
-    document.getElementById('txNote').value = editTx.note || '';
-    setTxType(editTx.type, false);
-    setTimeout(() => { document.getElementById('txCategory').value = editTx.category; }, 50);
-  } else {
-    document.getElementById('sheetTitle').textContent = 'নতুন লেনদেন';
-    document.getElementById('editId').value = '';
-    document.getElementById('txAmount').value = '';
-    document.getElementById('txDate').value = getTodayStr();
-    document.getElementById('txNote').value = '';
-    setTxType('income', false);
-  }
-}
-function closeSheet() {
-  document.getElementById('sheetOverlay').classList.remove('active');
-  document.getElementById('bottomSheet').classList.remove('active');
-}
-
-// ---- ট্রানজেকশন টাইপ টগল ----
-function setTxType(type, resetForm = true) {
-  state.currentTxType = type;
-  const incBtn = document.getElementById('typeIncome');
-  const expBtn = document.getElementById('typeExpense');
-  if (type === 'income') {
-    incBtn.className = 'py-2.5 rounded-xl text-sm font-bold border-2 transition-all flex items-center justify-center gap-1.5 dark:border-dark-income dark:bg-dark-income/10 dark:text-dark-income light:border-light-income light:bg-light-income/10 light:text-light-income';
-    expBtn.className = 'py-2.5 rounded-xl text-sm font-bold border-2 transition-all flex items-center justify-center gap-1.5 dark:border-dark-border dark:text-dark-muted light:border-light-border light:text-light-muted';
-  } else {
-    expBtn.className = 'py-2.5 rounded-xl text-sm font-bold border-2 transition-all flex items-center justify-center gap-1.5 dark:border-dark-expense dark:bg-dark-expense/10 dark:text-dark-expense light:border-light-expense light:bg-light-expense/10 light:text-light-expense';
-    incBtn.className = 'py-2.5 rounded-xl text-sm font-bold border-2 transition-all flex items-center justify-center gap-1.5 dark:border-dark-border dark:text-dark-muted light:border-light-border light:text-light-muted';
-  }
-  populateCategoryDropdown();
-  if (resetForm) document.getElementById('txAmount').value = '';
-}
-
-function populateCategoryDropdown() {
-  const sel = document.getElementById('txCategory');
-  const cats = state.categories[state.currentTxType] || [];
-  sel.innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('');
-}
-
-// ---- ট্রানজেকশন সেভ ----
-function saveTransaction() {
-  const amount = parseFloat(document.getElementById('txAmount').value);
-  const category = document.getElementById('txCategory').value;
-  const date = document.getElementById('txDate').value;
-  const note = document.getElementById('txNote').value.trim();
-  const editId = document.getElementById('editId').value;
-
-  if (!amount || amount <= 0) { showToast('সঠিক পরিমাণ লিখুন', 'error'); return; }
-  if (!date) { showToast('তারিখ নির্বাচন করুন', 'error'); return; }
-  if (!category) { showToast('ক্যাটেগরি নির্বাচন করুন', 'error'); return; }
-
-  if (editId) {
-    const idx = state.transactions.findIndex(t => t.id === editId);
-    if (idx > -1) {
-      state.transactions[idx] = { ...state.transactions[idx], amount, category, date, note, type: state.currentTxType };
-    }
-    showToast('লেনদেন আপডেট হয়েছে');
-  } else {
-    state.transactions.push({
-      id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
-      type: state.currentTxType,
-      amount, category, date, note,
-      createdAt: Date.now()
-    });
-    showToast('লেনদেন সংরক্ষিত হয়েছে');
-  }
-  persist(); closeSheet(); renderHome();
-}
-
-// ---- ট্রানজেকশন ডিলিট ----
-function deleteTx(id) {
-  confirmAction('লেনদেন মুছুন', 'এই লেনদেনটি মুছে ফেলা হবে। আপনি কি নিশ্চিত?', () => {
-    state.transactions = state.transactions.filter(t => t.id !== id);
-    persist(); renderHome(); renderHistory();
-    showToast('লেনদেন মুছে ফেলা হয়েছে');
-  });
-}
-
-// ---- কনফার্মেশন মোডাল ----
-function confirmAction(title, msg, cb) {
-  document.getElementById('confirmTitle').textContent = title;
-  document.getElementById('confirmMsg').textContent = msg;
-  confirmCallback = cb;
-  document.getElementById('confirmModal').classList.add('active');
-}
-function closeConfirm() {
-  document.getElementById('confirmModal').classList.remove('active');
-  confirmCallback = null;
-}
-document.getElementById('confirmBtn').addEventListener('click', () => {
-  if (confirmCallback) confirmCallback();
-  closeConfirm();
-});
-
-// ---- টোস্ট ----
-function showToast(msg, type = 'success') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast fixed top-4 left-1/2 -translate-x-1/2 z-[200] px-5 py-3 rounded-xl text-sm font-medium shadow-xl ' +
-    (type === 'error' ? 'bg-red-500 text-white' : 'dark:bg-dark-elevated light:bg-white dark:text-dark-text light:text-light-text dark:border dark:border-dark-border light:border-light-border');
-  requestAnimationFrame(() => t.classList.add('show'));
-  clearTimeout(t._timer);
-  t._timer = setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-// ---- পরিসংখ্যান ক্যালকুলেশন ----
-function calcStats(txList) {
-  const list = txList || state.transactions;
-  let income = 0, expense = 0;
-  list.forEach(t => { if (t.type === 'income') income += t.amount; else expense += t.amount; });
-  return { income, expense, balance: income - expense };
-}
-
-// ---- হোম রেন্ডার ----
-function renderHome() {
-  const s = calcStats();
-  document.getElementById('statBalance').textContent = formatBD(s.balance);
-  document.getElementById('statIncome').textContent = formatBD(s.income);
-  document.getElementById('statExpense').textContent = formatBD(s.expense);
-  renderGraph();
-  renderRecent();
-}
-
-// ---- সাম্প্রতিক লেনদেন ----
-function renderRecent() {
-  const container = document.getElementById('recentList');
-  const sorted = [...state.transactions].sort((a, b) => b.createdAt - a.createdAt).slice(0, 5);
-  if (sorted.length === 0) {
-    container.innerHTML = `<div class="text-center py-8"><div class="empty-state-icon mx-auto mb-2"><i data-lucide="receipt" class="w-12 h-12 mx-auto dark:text-dark-muted light:text-light-muted"></i></div><p class="text-sm dark:text-dark-muted light:text-light-muted">কোনো লেনদেন নেই</p><p class="text-xs dark:text-dark-muted/60 light:text-light-muted/60 mt-1">+ বাটনে ট্যাপ করে শুরু করুন</p></div>`;
-    lucide.createIcons(); return;
-  }
-  container.innerHTML = sorted.map(t => txItemHTML(t)).join('');
-  lucide.createIcons();
-}
-
-function txItemHTML(t) {
-  const isInc = t.type === 'income';
-  const colorClass = isInc ? 'dark:text-dark-income light:text-light-income' : 'dark:text-dark-expense light:text-light-expense';
-  const bgClass = isInc ? 'dark:bg-dark-income/10 light:bg-light-income/10' : 'dark:bg-dark-expense/10 light:bg-light-expense/10';
-  const sign = isInc ? '+' : '-';
-  const icon = isInc ? 'arrow-up-right' : 'arrow-down-right';
-  return `<div class="flex items-center gap-3 p-3 rounded-xl dark:bg-dark-card light:bg-light-card dark:border dark:border-dark-border light:border-light-border group cursor-pointer" onclick="openSheet(${JSON.stringify(t).replace(/"/g,'&quot;')})">
-    <div class="w-9 h-9 rounded-lg ${bgClass} flex items-center justify-center shrink-0"><i data-lucide="${icon}" class="w-4 h-4 ${colorClass}"></i></div>
-    <div class="flex-1 min-w-0"><p class="text-sm font-semibold truncate">${t.category}</p><p class="text-[10px] dark:text-dark-muted light:text-light-muted truncate">${t.note || formatDateBN(t.date)}</p></div>
-    <div class="text-right shrink-0 flex items-center gap-2"><p class="text-sm font-bold ${colorClass}">${sign}${formatBD(t.amount)}</p><button onclick="event.stopPropagation();deleteTx('${t.id}')" class="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-lg hover:bg-red-500/10"><i data-lucide="trash-2" class="w-3.5 h-3.5 text-red-400"></i></button></div>
-  </div>`;
-}
-
-// ---- SVG ট্রেন্ড গ্রাফ ----
-function renderGraph() {
-  const svg = document.getElementById('trendGraph');
-  const W = 320, H = 180, pad = { t: 10, r: 10, b: 28, l: 10 };
-  const gW = W - pad.l - pad.r, gH = H - pad.t - pad.b;
-  const data = getGraphData();
-  const vals = data.map(d => d.value);
-  const maxVal = Math.max(1, ...vals); // ক্র্যাশ সেফ: ন্যূনতম ১
-  const isDark = document.documentElement.classList.contains('dark');
-  const gridColor = isDark ? '#30363d' : '#e2ddd5';
-  const textColor = isDark ? '#8b949e' : '#7c7872';
-  const lineColor = isDark ? '#ff6b35' : '#d4551a';
-
-  let svgContent = '';
-  // গ্রিড লাইন
-  for (let i = 0; i <= 4; i++) {
-    const y = pad.t + (gH / 4) * i;
-    svgContent += `<line x1="${pad.l}" y1="${y}" x2="${W - pad.r}" y2="${y}" stroke="${gridColor}" stroke-width="0.5" stroke-dasharray="3,3"/>`;
-  }
-  // লেবেল ও ডট
-  if (data.length > 0) {
-    const points = data.map((d, i) => ({
-      x: pad.l + (data.length === 1 ? gW / 2 : (gW / (data.length - 1)) * i),
-      y: pad.t + gH - (d.value / maxVal) * gH
-    }));
-    // গ্রেডিয়েন্ট ডেফিনিশন
-    svgContent += `<defs><linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="${lineColor}" stop-opacity="0.3"/>
-      <stop offset="100%" stop-color="${lineColor}" stop-opacity="0.02"/>
-    </linearGradient></defs>`;
-    // এরিয়া ফিল
-    if (points.length >= 2) {
-      let areaPath = `M${points[0].x},${points[0].y}`;
-      for (let i = 1; i < points.length; i++) {
-        const cp = bezierCP(points[i-1], points[i]);
-        areaPath += ` C${cp.cp1x},${cp.cp1y} ${cp.cp2x},${cp.cp2y} ${points[i].x},${points[i].y}`;
-      }
-      areaPath += ` L${points[points.length-1].x},${pad.t + gH} L${points[0].x},${pad.t + gH} Z`;
-      svgContent += `<path d="${areaPath}" fill="url(#areaGrad)"/>`;
-      // কার্ভ লাইন
-      let linePath = `M${points[0].x},${points[0].y}`;
-      for (let i = 1; i < points.length; i++) {
-        const cp = bezierCP(points[i-1], points[i]);
-        linePath += ` C${cp.cp1x},${cp.cp1y} ${cp.cp2x},${cp.cp2y} ${points[i].x},${points[i].y}`;
-      }
-      svgContent += `<path d="${linePath}" fill="none" stroke="${lineColor}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
-    } else if (points.length === 1) {
-      svgContent += `<circle cx="${points[0].x}" cy="${points[0].y}" r="4" fill="${lineColor}"/>`;
-    }
-    // নোড সার্কেল ও লেবেল
-    points.forEach((p, i) => {
-      svgContent += `<circle class="graph-node" cx="${p.x}" cy="${p.y}" r="3.5" fill="${lineColor}" stroke="${isDark ? '#0d1117' : '#f4f1eb'}" stroke-width="2" data-idx="${i}" data-val="${data[i].value}" data-label="${data[i].label}"/>`;
-      const labelY = pad.t + gH + 16;
-      svgContent += `<text x="${p.x}" y="${labelY}" text-anchor="middle" fill="${textColor}" font-size="8" font-family="Hind Siliguri">${data[i].label}</text>`;
-    });
-  } else {
-    // এম্পটি স্টেট প্লেসহোল্ডার লাইন
-    const midY = pad.t + gH / 2;
-    svgContent += `<line x1="${pad.l}" y1="${midY}" x2="${W - pad.r}" y2="${midY}" stroke="${gridColor}" stroke-width="1.5" stroke-dasharray="6,4"/>`;
-    svgContent += `<text x="${W/2}" y="${midY - 10}" text-anchor="middle" fill="${textColor}" font-size="10" font-family="Hind Siliguri">কোনো তথ্য নেই</text>`;
-  }
-  svg.innerHTML = svgContent;
-
-  // টুলটিপ ইভেন্ট
-  svg.querySelectorAll('.graph-node').forEach(node => {
-    node.addEventListener('mouseenter', showGraphTooltip);
-    node.addEventListener('mouseleave', hideGraphTooltip);
-    node.addEventListener('touchstart', (e) => { e.preventDefault(); showGraphTooltip(e); setTimeout(hideGraphTooltip, 1500); }, { passive: false });
-  });
-}
-
-function showGraphTooltip(e) {
-  const node = e.target;
-  const tooltip = document.getElementById('graphTooltip');
-  const container = document.getElementById('graphContainer');
-  const rect = container.getBoundingClientRect();
-  const svgRect = document.getElementById('trendGraph').getBoundingClientRect();
-  const scaleX = svgRect.width / 320;
-  const scaleY = svgRect.height / 180;
-  const x = parseFloat(node.getAttribute('cx')) * scaleX;
-  const y = parseFloat(node.getAttribute('cy')) * scaleY;
-  tooltip.textContent = formatBD(node.dataset.val);
-  tooltip.style.left = x + 'px';
-  tooltip.style.top = y + 'px';
-  tooltip.classList.remove('hidden');
-}
-function hideGraphTooltip() {
-  document.getElementById('graphTooltip').classList.add('hidden');
-}
-
-function bezierCP(p0, p1) {
-  const tension = 0.3;
-  const dx = p1.x - p0.x;
+function defaultCats(){
   return {
-    cp1x: p0.x + dx * tension, cp1y: p0.y,
-    cp2x: p1.x - dx * tension, cp2y: p1.y
+    income: ['বেতন','ব্যবসা','উপহার','বিনিয়োগ'],
+    expense: ['খাবার','যাতায়াত','বাজার','বিল','স্বাস্থ্য','শিক্ষা']
   };
 }
+function saveTx(){ localStorage.setItem(LS.tx, JSON.stringify(state.transactions)); }
+function saveCat(){ localStorage.setItem(LS.cat, JSON.stringify(state.categories)); }
 
-function getGraphData() {
-  const txs = state.transactions;
-  const period = state.graphPeriod;
-  const now = new Date();
-  let labels = [], data = [];
+/* ---------- Bangla number formatter ---------- */
+const bnDigits = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
+function toBn(num){
+  return String(num).replace(/[0-9]/g, d => bnDigits[d]);
+}
+function fmtCurrency(n){
+  const v = Number(n) || 0;
+  const parts = v.toFixed(2).split('.');
+  // add thousand separators
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return '৳ ' + toBn(parts[0] + '.' + parts[1]);
+}
+function fmtNum(n){ return toBn(Number(n).toLocaleString('en-US')); }
 
-  if (period === 'week') {
-    const dayNames = ['শনি','রবি','সোম','মঙ্গল','বুধ','বৃহ','শুক্র'];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(now); d.setDate(d.getDate() - i);
-      const ds = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-      labels.push(dayNames[d.getDay()]);
-      const inc = txs.filter(t => t.date === ds && t.type === 'income').reduce((s,t) => s + t.amount, 0);
-      const exp = txs.filter(t => t.date === ds && t.type === 'expense').reduce((s,t) => s + t.amount, 0);
-      data.push({ label: dayNames[d.getDay()], value: inc - exp });
-    }
-  } else if (period === 'month') {
-    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-    const step = Math.max(1, Math.floor(daysInMonth / 7));
-    for (let i = 0; i < daysInMonth; i += step) {
-      const day = i + 1;
-      const ds = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
-      labels.push(toBD(day));
-      const inc = txs.filter(t => t.date === ds && t.type === 'income').reduce((s,t) => s + t.amount, 0);
-      const exp = txs.filter(t => t.date === ds && t.type === 'expense').reduce((s,t) => s + t.amount, 0);
-      data.push({ label: toBD(day), value: inc - exp });
-    }
-  } else {
-    const monthNames = ['জানু','ফেব','মার্চ','এপ্রি','মে','জুন','জুলা','আগ','সেপ্ট','অক্ট','নভ','ডিস'];
-    for (let m = 0; m < 12; m++) {
-      const prefix = now.getFullYear() + '-' + String(m + 1).padStart(2, '0');
-      labels.push(monthNames[m]);
-      const inc = txs.filter(t => t.date.startsWith(prefix) && t.type === 'income').reduce((s,t) => s + t.amount, 0);
-      const exp = txs.filter(t => t.date.startsWith(prefix) && t.type === 'expense').reduce((s,t) => s + t.amount, 0);
-      data.push({ label: monthNames[m], value: inc - exp });
-    }
-  }
-  return data;
+/* ---------- Bangla date ---------- */
+const bnMonths = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+const bnDays = ['রবিবার','সোমবার','মঙ্গলবার','বুধবার','বৃহস্পতিবার','শুক্রবার','শনিবার'];
+function bnDate(dateStr){
+  const d = new Date(dateStr);
+  if(isNaN(d)) return '';
+  return `${toBn(d.getDate())} ${bnMonths[d.getMonth()]} ${toBn(d.getFullYear())}`;
+}
+function bnDateFull(){
+  const d = new Date();
+  return `${bnDays[d.getDay()]}, ${toBn(d.getDate())} ${bnMonths[d.getMonth()]}`;
+}
+function bnFileDate(){
+  const d = new Date();
+  return `${toBn(d.getDate())}-${bnMonths[d.getMonth()]}-${toBn(d.getFullYear())}`;
 }
 
-function setGraphPeriod(p, btn) {
-  state.graphPeriod = p;
-  document.querySelectorAll('.segment-btn').forEach(b => {
-    b.classList.remove('active');
-    b.classList.add('dark:text-dark-muted', 'light:text-light-muted');
+/* ---------- Toast ---------- */
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.opacity = '1';
+  t.style.transform = 'translate(-50%, 0)';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ t.style.opacity='0'; }, 2200);
+}
+
+/* ============================================================
+   THEME ENGINE
+   ============================================================ */
+const mq = window.matchMedia('(prefers-color-scheme: dark)');
+function applyTheme(){
+  const t = state.theme;
+  const dark = (t === 'dark') || (t === 'system' && mq.matches);
+  document.documentElement.classList.toggle('dark', dark);
+  document.querySelector('meta[name=theme-color]').setAttribute('content', dark ? '#0b1120' : '#f1f5f9');
+  document.querySelectorAll('.theme-btn').forEach(b=>{
+    const active = b.dataset.theme === t;
+    b.classList.toggle('bg-brand-500', active);
+    b.classList.toggle('text-white', active);
+    b.classList.toggle('bg-slate-100', !active);
+    b.classList.toggle('dark:bg-slate-700/50', !active);
   });
-  btn.classList.add('active');
-  btn.classList.remove('dark:text-dark-muted', 'light:text-light-muted');
-  renderGraph();
+}
+function setTheme(t){ state.theme = t; localStorage.setItem(LS.theme, t); applyTheme(); }
+mq.addEventListener('change', ()=>{ if(state.theme==='system') applyTheme(); });
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function switchTab(tab){
+  ['home','history','export','settings'].forEach(t=>{
+    document.getElementById('page-'+t).classList.toggle('hidden', t!==tab);
+  });
+  document.querySelectorAll('.nav-btn').forEach(b=>{
+    const active = b.dataset.nav === tab;
+    b.classList.toggle('text-brand-500', active);
+    b.classList.toggle('text-slate-400', !active);
+  });
+  if(tab==='history') renderHistory();
+  if(tab==='export') renderExportInfo();
+  window.scrollTo({top:0, behavior:'smooth'});
+  refreshIcons();
 }
 
-// ---- ইতিহাস রেন্ডার ----
-function renderHistory() {
-  const container = document.getElementById('historyList');
-  const dateFilter = document.getElementById('filterDate').value;
-  const typeFilter = document.getElementById('filterType').value;
-  let filtered = [...state.transactions];
-  if (dateFilter) filtered = filtered.filter(t => t.date === dateFilter);
-  if (typeFilter === 'income') filtered = filtered.filter(t => t.type === 'income');
-  if (typeFilter === 'expense') filtered = filtered.filter(t => t.type === 'expense');
-  filtered.sort((a, b) => b.createdAt - a.createdAt);
-
-  if (filtered.length === 0) {
-    container.innerHTML = `<div class="text-center py-10"><div class="empty-state-icon mx-auto mb-2"><i data-lucide="search-x" class="w-12 h-12 mx-auto dark:text-dark-muted light:text-light-muted"></i></div><p class="text-sm dark:text-dark-muted light:text-light-muted">কোনো রেকর্ড পাওয়া যায়নি</p></div>`;
-    lucide.createIcons(); return;
-  }
-  container.innerHTML = filtered.map(t => txItemHTML(t)).join('');
-  lucide.createIcons();
+/* ============================================================
+   BOTTOM SHEET
+   ============================================================ */
+function openSheet(){
+  document.getElementById('inDate').value = new Date().toISOString().split('T')[0];
+  setTxType('income');
+  document.getElementById('inAmount').value = '';
+  document.getElementById('inNote').value = '';
+  const ov = document.getElementById('sheetOverlay');
+  ov.classList.remove('pointer-events-none');
+  ov.style.opacity = '1';
+  requestAnimationFrame(()=> document.getElementById('sheet').classList.add('open'));
+}
+function closeSheet(){
+  document.getElementById('sheet').classList.remove('open');
+  const ov = document.getElementById('sheetOverlay');
+  ov.style.opacity = '0';
+  setTimeout(()=> ov.classList.add('pointer-events-none'), 320);
+}
+function setTxType(type){
+  state.txType = type;
+  const inc = document.getElementById('typeIncome');
+  const exp = document.getElementById('typeExpense');
+  inc.classList.toggle('bg-emerald-500', type==='income');
+  inc.classList.toggle('text-white', type==='income');
+  inc.classList.toggle('text-slate-500', type!=='income');
+  exp.classList.toggle('bg-rose-500', type==='expense');
+  exp.classList.toggle('text-white', type==='expense');
+  exp.classList.toggle('text-slate-500', type!=='expense');
+  populateFormCategories();
+}
+function populateFormCategories(){
+  const sel = document.getElementById('inCategory');
+  const cats = state.categories[state.txType] || [];
+  sel.innerHTML = cats.length
+    ? cats.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('')
+    : '<option value="">— কোনো ক্যাটাগরি নেই —</option>';
 }
 
-function resetFilters() {
-  document.getElementById('filterDate').value = '';
-  document.getElementById('filterType').value = 'all';
+/* ---------- HTML escape ---------- */
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+/* ============================================================
+   TRANSACTIONS
+   ============================================================ */
+function addTransaction(){
+  const amount = parseFloat(document.getElementById('inAmount').value);
+  const category = document.getElementById('inCategory').value;
+  const note = document.getElementById('inNote').value.trim();
+  const date = document.getElementById('inDate').value;
+  if(!amount || amount <= 0){ toast('সঠিক পরিমাণ লিখুন'); return; }
+  if(!date){ toast('তারিখ নির্বাচন করুন'); return; }
+  state.transactions.push({
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+    type: state.txType,
+    amount: amount,
+    category: category || 'অন্যান্য',
+    note: note,
+    date: date,
+    ts: Date.now()
+  });
+  saveTx();
+  closeSheet();
+  toast('লেনদেন সংরক্ষিত হয়েছে');
+  renderAll();
+}
+function deleteTransaction(id){
+  state.transactions = state.transactions.filter(t=>t.id!==id);
+  saveTx();
+  toast('মুছে ফেলা হয়েছে');
+  renderAll();
   renderHistory();
 }
 
-// ---- এক্সপোর্ট ----
-function renderExportInfo() {
-  const txs = state.transactions;
-  document.getElementById('expTotalTx').textContent = toBD(txs.length);
-  if (txs.length > 0) {
-    const sorted = [...txs].sort((a, b) => a.createdAt - b.createdAt);
-    document.getElementById('expFirstTx').textContent = formatDateBN(sorted[0].date);
-    document.getElementById('expLastTx').textContent = formatDateBN(sorted[sorted.length - 1].date);
-  } else {
-    document.getElementById('expFirstTx').textContent = 'নেই';
-    document.getElementById('expLastTx').textContent = 'নেই';
-  }
+/* ---------- Totals ---------- */
+function getTotals(){
+  let inc=0, exp=0;
+  state.transactions.forEach(t=>{ if(t.type==='income') inc+=t.amount; else exp+=t.amount; });
+  return { income:inc, expense:exp, balance:inc-exp };
 }
 
-function getBengaliFileName() {
-  const d = new Date();
-  const months = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
-  return 'আয়-ব্যয় হিসাব ' + toBD(d.getDate()) + ' ' + months[d.getMonth()] + ' ' + toBD(d.getFullYear());
+/* ============================================================
+   RENDER: STATS + RECENT
+   ============================================================ */
+function renderStats(){
+  const t = getTotals();
+  document.getElementById('statBalance').textContent = fmtCurrency(t.balance);
+  document.getElementById('statIncome').textContent = fmtCurrency(t.income);
+  document.getElementById('statExpense').textContent = fmtCurrency(t.expense);
 }
 
-function exportData() {
-  const fmt = document.getElementById('exportFormat').value;
-  const txs = [...state.transactions].sort((a, b) => b.createdAt - a.createdAt);
-  if (txs.length === 0) { showToast('এক্সপোর্ট করার মতো কোনো তথ্য নেই', 'error'); return; }
-  const fname = getBengaliFileName();
-  if (fmt === 'pdf') exportPDF(txs, fname);
-  else if (fmt === 'word') exportWord(txs, fname);
-  else exportExcel(txs, fname);
-}
-
-function exportPDF(txs, fname) {
-  const s = calcStats(txs);
-  const isDark = document.documentElement.classList.contains('dark');
-  const rows = txs.map((t, i) => {
-    const sign = t.type === 'income' ? '+' : '-';
-    const color = t.type === 'income' ? '#059669' : '#dc2626';
-    return `<tr style="border-bottom:1px solid #e5e7eb;${i % 2 === 0 ? '' : 'background:#f9fafb;'}">
-      <td style="padding:10px 12px;font-size:13px;">${toBD(i + 1)}</td>
-      <td style="padding:10px 12px;font-size:13px;">${formatDateBN(t.date)}</td>
-      <td style="padding:10px 12px;font-size:13px;">${t.type === 'income' ? 'আয়' : 'ব্যয়'}</td>
-      <td style="padding:10px 12px;font-size:13px;">${t.category}</td>
-      <td style="padding:10px 12px;font-size:13px;text-align:right;color:${color};font-weight:600;">${sign}${formatBD(t.amount)}</td>
-      <td style="padding:10px 12px;font-size:12px;color:#6b7280;">${t.note || '-'}</td>
-    </tr>`;
-  }).join('');
-
-  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${fname}</title>
-    <style>@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap');
-    *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Hind Siliguri',sans-serif;padding:40px;color:#1a1a1a}
-    .header{text-align:center;margin-bottom:30px;border-bottom:2px solid #ff6b35;padding-bottom:20px}
-    .header h1{font-size:22px;font-weight:700;color:#ff6b35}
-    .header p{font-size:13px;color:#6b7280;margin-top:4px}
-    .summary{display:flex;gap:16px;margin-bottom:24px}
-    .summary-card{flex:1;padding:14px;border-radius:10px;border:1px solid #e5e7eb;text-align:center}
-    .summary-card .label{font-size:11px;color:#6b7280;margin-bottom:4px}
-    .summary-card .value{font-size:16px;font-weight:700}
-    .balance{color:#ff6b35}.income{color:#059669}.expense{color:#dc2626}
-    table{width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden}
-    th{background:#ff6b35;color:#fff;padding:10px 12px;font-size:12px;text-align:left;font-weight:600}
-    .footer{margin-top:24px;text-align:center;font-size:11px;color:#9ca3af}
-    @media print{body{padding:20px}.no-print{display:none}}</style></head>
-    <body>
-    <div class="header"><h1>${fname}</h1><p>তৈরির তারিখ: ${getBengaliDateHeader()}</p></div>
-    <div class="summary">
-      <div class="summary-card"><div class="label">মোট জমা</div><div class="value balance">${formatBD(s.balance)}</div></div>
-      <div class="summary-card"><div class="label">মোট আয়</div><div class="value income">${formatBD(s.income)}</div></div>
-      <div class="summary-card"><div class="label">মোট ব্যয়</div><div class="value expense">${formatBD(s.expense)}</div></div>
+function txRow(t){
+  const isInc = t.type==='income';
+  const icon = isInc ? 'arrow-down-left' : 'arrow-up-right';
+  const color = isInc ? 'emerald' : 'rose';
+  const sign = isInc ? '+' : '−';
+  return `
+  <div class="flex items-center gap-3 bg-white dark:bg-slate-800/60 rounded-2xl p-3 border border-slate-100 dark:border-slate-700/50">
+    <div class="w-10 h-10 rounded-xl bg-${color}-500/10 flex items-center justify-center shrink-0">
+      <i data-lucide="${icon}" class="w-5 h-5 text-${color}-500"></i>
     </div>
-    <table><thead><tr><th>ক্রম</th><th>তারিখ</th><th>ধরন</th><th>ক্যাটেগরি</th><th style="text-align:right">পরিমাণ</th><th>নোট</th></tr></thead><tbody>${rows}</tbody></table>
-    <div class="footer">আয়-ব্যয় হিসাব প্রো দ্বারা তৈরি</div>
-    <div class="no-print" style="margin-top:20px;text-align:center"><button onclick="window.print()" style="padding:10px 30px;background:#ff6b35;color:#fff;border:none;border-radius:8px;font-size:14px;font-family:'Hind Siliguri';cursor:pointer;font-weight:600">প্রিন্ট / PDF সেভ করুন</button></div>
-    </body></html>`;
-
-  const w = window.open('', '_blank');
-  if (w) { w.document.write(html); w.document.close(); }
-  else showToast('পপআপ ব্লক করা হয়েছে', 'error');
+    <div class="flex-1 min-w-0">
+      <p class="font-medium text-sm truncate">${escapeHtml(t.category)}</p>
+      <p class="text-xs text-slate-400 truncate">${t.note ? escapeHtml(t.note)+' • ' : ''}${bnDate(t.date)}</p>
+    </div>
+    <div class="text-right shrink-0">
+      <p class="font-semibold text-sm text-${color}-500">${sign} ${fmtCurrency(t.amount).replace('৳ ','৳')}</p>
+      <button onclick="deleteTransaction('${t.id}')" class="text-xs text-slate-400 mt-0.5 tap">মুছুন</button>
+    </div>
+  </div>`;
 }
 
-function exportWord(txs, fname) {
-  const s = calcStats(txs);
-  let tableRows = `<tr><td style="padding:6px 10px;border:1px solid #ccc;font-size:12px;background:#ff6b35;color:#fff;font-weight:bold">ক্রম</td><td style="padding:6px 10px;border:1px solid #ccc;font-size:12px;background:#ff6b35;color:#fff;font-weight:bold">তারিখ</td><td style="padding:6px 10px;border:1px solid #ccc;font-size:12px;background:#ff6b35;color:#fff;font-weight:bold">ধরন</td><td style="padding:6px 10px;border:1px solid #ccc;font-size:12px;background:#ff6b35;color:#fff;font-weight:bold">ক্যাটেগরি</td><td style="padding:6px 10px;border:1px solid #ccc;font-size:12px;background:#ff6b35;color:#fff;font-weight:bold;text-align:right">পরিমাণ</td><td style="padding:6px 10px;border:1px solid #ccc;font-size:12px;background:#ff6b35;color:#fff;font-weight:bold">নোট</td></tr>`;
-  txs.forEach((t, i) => {
-    const sign = t.type === 'income' ? '+' : '-';
-    const color = t.type === 'income' ? '#059669' : '#dc2626';
-    tableRows += `<tr><td style="padding:6px 10px;border:1px solid #ddd;font-size:12px">${toBD(i+1)}</td><td style="padding:6px 10px;border:1px solid #ddd;font-size:12px">${formatDateBN(t.date)}</td><td style="padding:6px 10px;border:1px solid #ddd;font-size:12px">${t.type==='income'?'আয়':'ব্যয়'}</td><td style="padding:6px 10px;border:1px solid #ddd;font-size:12px">${t.category}</td><td style="padding:6px 10px;border:1px solid #ddd;font-size:12px;text-align:right;color:${color};font-weight:bold">${sign}${formatBD(t.amount)}</td><td style="padding:6px 10px;border:1px solid #ddd;font-size:11px;color:#666">${t.note||'-'}</td></tr>`;
+function renderRecent(){
+  const list = document.getElementById('recentList');
+  const recent = [...state.transactions].sort((a,b)=>b.ts-a.ts).slice(0,5);
+  if(!recent.length){
+    list.innerHTML = emptyState('কোনো লেনদেন নেই','প্রথম লেনদেন যোগ করতে + বাটনে চাপুন');
+  } else {
+    list.innerHTML = recent.map(txRow).join('');
+  }
+  refreshIcons();
+}
+
+function emptyState(title, sub){
+  return `<div class="text-center py-8 rounded-2xl bg-white dark:bg-slate-800/40 border border-dashed border-slate-200 dark:border-slate-700">
+    <div class="w-12 h-12 mx-auto rounded-2xl bg-slate-100 dark:bg-slate-700/50 flex items-center justify-center mb-2">
+      <i data-lucide="inbox" class="w-6 h-6 text-slate-400"></i></div>
+    <p class="font-medium text-sm">${title}</p>
+    <p class="text-xs text-slate-400 mt-0.5">${sub}</p>
+  </div>`;
+}
+
+/* ============================================================
+   SVG CURVE CHART ENGINE
+   ============================================================ */
+function getChartData(range){
+  const now = new Date();
+  let buckets = [];
+
+  if(range==='week'){
+    for(let i=6;i>=0;i--){
+      const d = new Date(now); d.setDate(now.getDate()-i);
+      buckets.push({ label: bnDays[d.getDay()].slice(0,3), key: d.toISOString().split('T')[0], income:0, expense:0 });
+    }
+    state.transactions.forEach(t=>{
+      const b = buckets.find(x=>x.key===t.date);
+      if(b){ t.type==='income'?b.income+=t.amount:b.expense+=t.amount; }
+    });
+  } else if(range==='month'){
+    for(let i=5;i>=0;i--){
+      const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+      buckets.push({ label: bnMonths[d.getMonth()].slice(0,3), y:d.getFullYear(), m:d.getMonth(), income:0, expense:0 });
+    }
+    state.transactions.forEach(t=>{
+      const dt = new Date(t.date);
+      const b = buckets.find(x=>x.y===dt.getFullYear() && x.m===dt.getMonth());
+      if(b){ t.type==='income'?b.income+=t.amount:b.expense+=t.amount; }
+    });
+  } else {
+    for(let i=4;i>=0;i--){
+      const y = now.getFullYear()-i;
+      buckets.push({ label: toBn(y), y:y, income:0, expense:0 });
+    }
+    state.transactions.forEach(t=>{
+      const dt = new Date(t.date);
+      const b = buckets.find(x=>x.y===dt.getFullYear());
+      if(b){ t.type==='income'?b.income+=t.amount:b.expense+=t.amount; }
+    });
+  }
+  return buckets;
+}
+
+/* Catmull-Rom -> Bezier smooth path */
+function smoothPath(points){
+  if(points.length<2) return '';
+  let d = `M ${points[0].x},${points[0].y}`;
+  for(let i=0;i<points.length-1;i++){
+    const p0 = points[i-1] || points[i];
+    const p1 = points[i];
+    const p2 = points[i+1];
+    const p3 = points[i+2] || p2;
+    const cp1x = p1.x + (p2.x - p0.x)/6;
+    const cp1y = p1.y + (p2.y - p0.y)/6;
+    const cp2x = p2.x - (p3.x - p1.x)/6;
+    const cp2y = p2.y - (p3.y - p1.y)/6;
+    d += ` C ${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`;
+  }
+  return d;
+}
+
+function renderChart(){
+  const data = getChartData(state.range);
+  const W = 340, H = 180, padL = 8, padR = 8, padT = 15, padB = 26;
+  const iw = W - padL - padR;
+  const ih = H - padT - padB;
+
+  // crash-safe max
+  let maxVal = 0;
+  data.forEach(d=>{ maxVal = Math.max(maxVal, d.income, d.expense); });
+  if(maxVal <= 0) maxVal = 100; // prevent div-by-zero
+
+  const n = data.length;
+  const stepX = n>1 ? iw/(n-1) : iw;
+
+  const mapY = v => padT + ih - (v/maxVal)*ih;
+  const mapX = i => padL + (n>1 ? i*stepX : iw/2);
+
+  const incPts = data.map((d,i)=>({x:mapX(i), y:mapY(d.income)}));
+  const expPts = data.map((d,i)=>({x:mapX(i), y:mapY(d.expense)}));
+
+  const incLine = smoothPath(incPts);
+  const expLine = smoothPath(expPts);
+
+  // gradient area under income line
+  const areaPath = incLine + ` L ${incPts[n-1].x.toFixed(1)},${(padT+ih)} L ${incPts[0].x.toFixed(1)},${(padT+ih)} Z`;
+
+  // grid lines
+  let grid = '';
+  for(let g=0; g<=4; g++){
+    const y = padT + (ih/4)*g;
+    grid += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="currentColor" stroke-width="1" stroke-dasharray="3 4" opacity="0.12"/>`;
+  }
+
+  // x labels
+  let labels = '';
+  data.forEach((d,i)=>{
+    labels += `<text x="${mapX(i).toFixed(1)}" y="${H-8}" text-anchor="middle" font-size="9" fill="currentColor" opacity="0.5" font-family="Hind Siliguri">${d.label}</text>`;
   });
 
-  const content = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
-  <head><meta charset="UTF-8"><title>${fname}</title>
-  <style>@font-face{font-family:'Hind Siliguri';src:local('Hind Siliguri')}body{font-family:'Hind Siliguri',sans-serif;padding:20px}h1{font-size:20px;color:#ff6b35;border-bottom:2px solid #ff6b35;padding-bottom:8px}.summary{margin:16px 0}.summary td{padding:6px 12px;font-size:13px;border:1px solid #ddd}table{border-collapse:collapse;width:100%}</style></head>
-  <body><h1>${fname}</h1><p style="font-size:12px;color:#666">তৈরির তারিখ: ${getBengaliDateHeader()}</p>
-  <table class="summary"><tr><td style="font-weight:bold">মোট জমা:</td><td style="color:#ff6b35;font-weight:bold">${formatBD(s.balance)}</td><td style="font-weight:bold">মোট আয়:</td><td style="color:#059669;font-weight:bold">${formatBD(s.income)}</td><td style="font-weight:bold">মোট ব্যয়:</td><td style="color:#dc2626;font-weight:bold">${formatBD(s.expense)}</td></tr></table>
-  <table>${tableRows}</table>
-  <p style="margin-top:16px;font-size:10px;color:#999;text-align:center">আয়-ব্যয় হিসাব প্রো দ্বারা তৈরি</p></body></html>`;
+  // nodes
+  let nodes = '';
+  incPts.forEach(p=>{ nodes += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.2" fill="#10b981" stroke="#fff" stroke-width="1.5"/>`; });
+  expPts.forEach(p=>{ nodes += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.2" fill="#f43f5e" stroke="#fff" stroke-width="1.5"/>`; });
 
-  const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
-  const blob = new Blob([bom, content], { type: 'application/msword' });
-  downloadBlob(blob, fname + '.doc');
+  const hasData = state.transactions.length > 0;
+
+  const svg = `
+  <svg viewBox="0 0 ${W} ${H}" class="w-full text-slate-400" style="overflow:visible">
+    <defs>
+      <linearGradient id="incGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#10b981" stop-opacity="0.28"/>
+        <stop offset="100%" stop-color="#10b981" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    ${grid}
+    ${hasData ? `<path d="${areaPath}" fill="url(#incGrad)" class="trend-line"/>` : ''}
+    <path d="${expLine}" fill="none" stroke="#f43f5e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="trend-line" opacity="${hasData?1:0.35}"/>
+    <path d="${incLine}" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="trend-line" opacity="${hasData?1:0.35}"/>
+    ${hasData ? nodes : ''}
+    ${labels}
+  </svg>`;
+
+  document.getElementById('chartWrap').innerHTML = svg;
 }
 
-function exportExcel(txs, fname) {
-  const s = calcStats(txs);
-  let csv = '\uFEFF'; // UTF-8 BOM
-  csv += fname + '\n\n';
-  csv += 'মোট জমা,' + '৳ ' + toBD(s.balance) + '\n';
-  csv += 'মোট আয়,' + '৳ ' + toBD(s.income) + '\n';
-  csv += 'মোট ব্যয়,' + '৳ ' + toBD(s.expense) + '\n\n';
-  csv += 'ক্রম,তারিখ,ধরন,ক্যাটেগরি,পরিমাণ,নোট\n';
-  txs.forEach((t, i) => {
-    const sign = t.type === 'income' ? '+' : '-';
-    csv += [toBD(i+1), t.date, t.type==='income'?'আয়':'ব্যয়', t.category, sign + '৳ ' + toBD(t.amount), t.note || ''].map(v => '"' + v.replace(/"/g,'""') + '"').join(',') + '\n';
+/* ============================================================
+   HISTORY + FILTERS
+   ============================================================ */
+function renderHistory(){
+  const dateF = document.getElementById('filterDate').value;
+  const typeF = document.getElementById('filterType').value;
+  let list = [...state.transactions].sort((a,b)=>b.ts-a.ts);
+  if(dateF) list = list.filter(t=>t.date===dateF);
+  if(typeF!=='all') list = list.filter(t=>t.type===typeF);
+
+  const el = document.getElementById('historyList');
+  el.innerHTML = list.length ? list.map(txRow).join('') : emptyState('কোনো রেকর্ড পাওয়া যায়নি','ফিল্টার পরিবর্তন করে দেখুন');
+  refreshIcons();
+}
+
+/* ============================================================
+   CATEGORY MANAGER
+   ============================================================ */
+function renderCategories(){
+  const el = document.getElementById('catList');
+  const chips = [];
+  ['income','expense'].forEach(type=>{
+    state.categories[type].forEach(c=>{
+      const color = type==='income'?'emerald':'rose';
+      chips.push(`<span class="inline-flex items-center gap-1.5 bg-${color}-500/10 text-${color}-600 dark:text-${color}-400 rounded-full pl-3 pr-1.5 py-1.5 text-xs font-medium">
+        ${escapeHtml(c)}
+        <button onclick="deleteCat('${type}','${escapeHtml(c).replace(/'/g,"\\'")}')" class="w-4 h-4 rounded-full bg-${color}-500/20 flex items-center justify-center tap"><i data-lucide="x" class="w-3 h-3"></i></button>
+      </span>`);
+    });
   });
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-  downloadBlob(blob, fname + '.csv');
+  el.innerHTML = chips.length ? chips.join('') : '<p class="text-xs text-slate-400">কোনো ক্যাটাগরি নেই</p>';
+  refreshIcons();
+}
+function addCategory(){
+  const name = document.getElementById('catInput').value.trim();
+  const type = document.getElementById('catType').value;
+  if(!name){ toast('ক্যাটাগরি নাম লিখুন'); return; }
+  if(state.categories[type].includes(name)){ toast('এই ক্যাটাগরি আগে থেকেই আছে'); return; }
+  state.categories[type].push(name);
+  saveCat();
+  document.getElementById('catInput').value='';
+  toast('ক্যাটাগরি যোগ হয়েছে');
+  renderCategories();
+  populateFormCategories();
+}
+function deleteCat(type, name){
+  state.categories[type] = state.categories[type].filter(c=>c!==name);
+  saveCat();
+  renderCategories();
+  populateFormCategories();
+  toast('ক্যাটাগরি মুছে ফেলা হয়েছে');
 }
 
-function downloadBlob(blob, filename) {
+/* ============================================================
+   EXPORT SUITE
+   ============================================================ */
+function renderExportInfo(){
+  document.getElementById('exportCount').textContent = toBn(state.transactions.length);
+}
+
+function sortedTx(){
+  return [...state.transactions].sort((a,b)=>new Date(a.date)-new Date(b.date) || a.ts-b.ts);
+}
+
+function downloadBlob(blob, filename){
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = filename;
   document.body.appendChild(a); a.click();
   document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  showToast('ফাইল ডাউনলোড হচ্ছে');
+  setTimeout(()=>URL.revokeObjectURL(url), 1500);
 }
 
-// ---- ক্যাটেগরি ম্যানেজার ----
-function renderCategories() {
-  ['income', 'expense'].forEach(type => {
-    const container = document.getElementById(type + 'CatList');
-    const cats = state.categories[type] || [];
-    const colorClass = type === 'income' ? 'dark:text-dark-income light:text-light-income' : 'dark:text-dark-expense light:text-light-expense';
-    const bgClass = type === 'income' ? 'dark:bg-dark-income/10 light:bg-light-income/10' : 'dark:bg-dark-expense/10 light:bg-light-expense/10';
-    container.innerHTML = cats.map(c => `
-      <div class="flex items-center justify-between p-2.5 rounded-lg ${bgClass}">
-        <span class="text-sm font-medium ${colorClass}">${c}</span>
-        <button onclick="deleteCategory('${type}','${c.replace(/'/g,"\\'")}')" class="p-1.5 rounded-lg hover:bg-red-500/10 transition-colors">
-          <i data-lucide="x" class="w-3.5 h-3.5 text-red-400"></i>
-        </button>
-      </div>
-    `).join('');
-  });
-  lucide.createIcons();
+function doExport(){
+  if(!state.transactions.length){ toast('এক্সপোর্ট করার মতো কোনো ডেটা নেই'); return; }
+  const fmt = document.getElementById('exportFormat').value;
+  const fname = `আয়-ব্যয় হিসাব ${bnFileDate()}`;
+  if(fmt==='pdf') exportPDF(fname);
+  else if(fmt==='excel') exportExcel(fname);
+  else exportWord(fname);
 }
 
-function addCategory(type) {
-  const input = document.getElementById('new' + (type === 'income' ? 'Income' : 'Expense') + 'Cat');
-  const val = input.value.trim();
-  if (!val) { showToast('ক্যাটেগরির নাম লিখুন', 'error'); return; }
-  if (state.categories[type].includes(val)) { showToast('এই ক্যাটেগরি আগে থেকেই আছে', 'error'); return; }
-  state.categories[type].push(val);
-  persist(); input.value = '';
-  renderCategories(); populateCategoryDropdown();
-  showToast('ক্যাটেগরি যোগ হয়েছে');
+function buildRows(){
+  return sortedTx().map((t,i)=>({
+    sl: toBn(i+1),
+    date: bnDate(t.date),
+    type: t.type==='income'?'আয়':'ব্যয়',
+    category: t.category,
+    note: t.note || '—',
+    amount: fmtCurrency(t.amount)
+  }));
 }
 
-function deleteCategory(type, name) {
-  const inUse = state.transactions.some(t => t.type === type && t.category === name);
-  if (inUse) { showToast('এই ক্যাটেগরি ব্যবহারে আছে, প্রথমে সেই লেনদেনগুলো মুছুন বা পরিবর্তন করুন', 'error'); return; }
-  state.categories[type] = state.categories[type].filter(c => c !== name);
-  persist(); renderCategories(); populateCategoryDropdown();
-  showToast('ক্যাটেগরি মুছে ফেলা হয়েছে');
+/* ---------- PDF (print window) ---------- */
+function exportPDF(fname){
+  const t = getTotals();
+  const rows = buildRows();
+  const rowsHtml = rows.map(r=>`<tr>
+    <td>${r.sl}</td><td>${escapeHtml(r.date)}</td>
+    <td class="${r.type==='আয়'?'inc':'exp'}">${r.type}</td>
+    <td>${escapeHtml(r.category)}</td><td>${escapeHtml(r.note)}</td>
+    <td style="text-align:right">${r.amount}</td></tr>`).join('');
+
+  const html = `<!DOCTYPE html><html lang="bn"><head><meta charset="UTF-8">
+  <title>${fname}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{font-family:'Hind Siliguri',sans-serif;box-sizing:border-box;}
+    body{padding:32px;color:#1e293b;}
+    h1{font-size:22px;margin:0;color:#4f46e5;}
+    .sub{color:#64748b;font-size:13px;margin:4px 0 20px;}
+    .cards{display:flex;gap:12px;margin-bottom:24px;}
+    .card{flex:1;border:1px solid #e2e8f0;border-radius:12px;padding:14px;}
+    .card p{margin:0;font-size:12px;color:#64748b;}
+    .card h2{margin:4px 0 0;font-size:18px;}
+    table{width:100%;border-collapse:collapse;font-size:13px;}
+    th,td{border:1px solid #cbd5e1;padding:8px 10px;text-align:left;}
+    th{background:#4f46e5;color:#fff;font-weight:600;}
+    tr:nth-child(even){background:#f8fafc;}
+    .inc{color:#059669;font-weight:600;} .exp{color:#e11d48;font-weight:600;}
+    .foot{margin-top:20px;font-size:11px;color:#94a3b8;text-align:center;}
+    @media print{ body{padding:16px;} }
+  </style></head><body>
+  <h1>আয়-ব্যয় হিসাব</h1>
+  <p class="sub">রিপোর্ট তৈরির তারিখ: ${bnDate(new Date())}</p>
+  <div class="cards">
+    <div class="card"><p>মোট আয়</p><h2 class="inc">${fmtCurrency(t.income)}</h2></div>
+    <div class="card"><p>মোট ব্যয়</p><h2 class="exp">${fmtCurrency(t.expense)}</h2></div>
+    <div class="card"><p>ব্যালেন্স</p><h2>${fmtCurrency(t.balance)}</h2></div>
+  </div>
+  <table>
+    <thead><tr><th>ক্রম</th><th>তারিখ</th><th>ধরন</th><th>ক্যাটাগরি</th><th>বিবরণ</th><th style="text-align:right">পরিমাণ</th></tr></thead>
+    <tbody>${rowsHtml}</tbody>
+  </table>
+  <p class="foot">আয়-ব্যয় হিসাব অ্যাপ দ্বারা তৈরি • মোট ${toBn(rows.length)} টি রেকর্ড</p>
+  <script>window.onload=function(){setTimeout(function(){window.print();},500);}<\/script>
+  </body></html>`;
+
+  const w = window.open('', '_blank');
+  if(!w){ toast('পপআপ ব্লক করা হয়েছে, অনুমতি দিন'); return; }
+  w.document.open(); w.document.write(html); w.document.close();
+  toast('PDF প্রিন্ট উইন্ডো খোলা হচ্ছে');
 }
 
-// ---- ডেটা রিসেট ----
-function resetAllData() {
+/* ---------- Excel (.xls with UTF-8 BOM) ---------- */
+function exportExcel(fname){
+  const t = getTotals();
+  const rows = buildRows();
+  const rowsHtml = rows.map(r=>`<tr>
+    <td>${r.sl}</td><td>${escapeHtml(r.date)}</td><td>${r.type}</td>
+    <td>${escapeHtml(r.category)}</td><td>${escapeHtml(r.note)}</td>
+    <td>${r.amount}</td></tr>`).join('');
+
+  const html = `<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8">
+  <style>td,th{border:1px solid #999;padding:6px;font-family:'Hind Siliguri',Arial;} th{background:#4f46e5;color:#fff;}</style>
+  </head><body>
+  <table>
+    <tr><th colspan="6" style="font-size:16px">আয়-ব্যয় হিসাব — ${bnDate(new Date())}</th></tr>
+    <tr><th>ক্রম</th><th>তারিখ</th><th>ধরন</th><th>ক্যাটাগরি</th><th>বিবরণ</th><th>পরিমাণ</th></tr>
+    ${rowsHtml}
+    <tr><td colspan="5"><b>মোট আয়</b></td><td>${fmtCurrency(t.income)}</td></tr>
+    <tr><td colspan="5"><b>মোট ব্যয়</b></td><td>${fmtCurrency(t.expense)}</td></tr>
+    <tr><td colspan="5"><b>ব্যালেন্স</b></td><td>${fmtCurrency(t.balance)}</td></tr>
+  </table></body></html>`;
+
+  const bom = new Uint8Array([0xEF,0xBB,0xBF]);
+  const blob = new Blob([bom, html], {type:'application/vnd.ms-excel;charset=utf-8'});
+  downloadBlob(blob, fname + '.xls');
+  toast('Excel ফাইল ডাউনলোড হচ্ছে');
+}
+
+/* ---------- Word (.doc with UTF-8 BOM) ---------- */
+function exportWord(fname){
+  const t = getTotals();
+  const rows = buildRows();
+  const rowsHtml = rows.map(r=>`<tr>
+    <td>${r.sl}</td><td>${escapeHtml(r.date)}</td><td>${r.type}</td>
+    <td>${escapeHtml(r.category)}</td><td>${escapeHtml(r.note)}</td>
+    <td>${r.amount}</td></tr>`).join('');
+
+  const html = `<!DOCTYPE html><html xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="UTF-8">
+  <style>
+    body{font-family:'Hind Siliguri',Arial;}
+    h1{color:#4f46e5;}
+    table{width:100%;border-collapse:collapse;}
+    td,th{border:1px solid #888;padding:6px 8px;font-size:13px;}
+    th{background:#4f46e5;color:#fff;}
+  </style></head><body>
+  <h1>আয়-ব্যয় হিসাব</h1>
+  <p>রিপোর্টের তারিখ: ${bnDate(new Date())}</p>
+  <p><b>মোট আয়:</b> ${fmtCurrency(t.income)} &nbsp; | &nbsp; <b>মোট ব্যয়:</b> ${fmtCurrency(t.expense)} &nbsp; | &nbsp; <b>ব্যালেন্স:</b> ${fmtCurrency(t.balance)}</p>
+  <table>
+    <tr><th>ক্রম</th><th>তারিখ</th><th>ধরন</th><th>ক্যাটাগরি</th><th>বিবরণ</th><th>পরিমাণ</th></tr>
+    ${rowsHtml}
+  </table>
+  <p style="color:#888;font-size:11px;margin-top:16px">মোট ${toBn(rows.length)} টি রেকর্ড</p>
+  </body></html>`;
+
+  const bom = new Uint8Array([0xEF,0xBB,0xBF]);
+  const blob = new Blob([bom, html], {type:'application/msword;charset=utf-8'});
+  downloadBlob(blob, fname + '.doc');
+  toast('Word ফাইল ডাউনলোড হচ্ছে');
+}
+
+/* ============================================================
+   RESET ENGINE
+   ============================================================ */
+function resetAllData(){
+  if(!confirm('আপনি কি নিশ্চিত? সকল লেনদেন স্থায়ীভাবে মুছে যাবে।')) return;
+  if(!confirm('শেষবারের মতো নিশ্চিত করুন — এই কাজটি ফেরানো যাবে না।')) return;
+  localStorage.removeItem(LS.tx);
   state.transactions = [];
-  state.categories = { income: [...DEFAULT_CATS.income], expense: [...DEFAULT_CATS.expense] };
-  persist(); renderHome(); renderCategories(); renderExportInfo();
-  showToast('সকল ডেটা মুছে ফেলা হয়েছে');
-}
-
-// ---- উইন্ডো রিসাইজে গ্রাফ রিড্র ----
-let resizeTimer;
-window.addEventListener('resize', () => {
-  clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => { if (document.getElementById('tab-home').classList.contains('active')) renderGraph(); }, 200);
-});
-
-// ---- অ্যাপ ইনিশিয়ালাইজেশন ----
-function init() {
-  document.getElementById('headerDate').textContent = getBengaliDateHeader();
-  applyTheme(state.theme);
-  populateCategoryDropdown();
-  renderHome();
+  saveTx();
+  toast('সকল ডেটা মুছে ফেলা হয়েছে');
+  renderAll();
+  renderHistory();
   renderExportInfo();
-  renderCategories();
-  lucide.createIcons();
 }
 
-// DOM রেডি হলে ইনিট চালানো
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
-} else {
-  init();
+/* ============================================================
+   ICON REFRESH (safe)
+   ============================================================ */
+function refreshIcons(){
+  try { if(window.lucide) lucide.createIcons(); } catch(e){}
 }
+
+/* ============================================================
+   MASTER RENDER
+   ============================================================ */
+function renderAll(){
+  renderStats();
+  renderChart();
+  renderRecent();
+  renderExportInfo();
+  refreshIcons();
+}
+
+/* ============================================================
+   EVENT BINDINGS + INIT
+   ============================================================ */
+function bindEvents(){
+  document.getElementById('fab').addEventListener('click', openSheet);
+  document.getElementById('closeSheet').addEventListener('click', closeSheet);
+  document.getElementById('sheetOverlay').addEventListener('click', e=>{ if(e.target.id==='sheetOverlay') closeSheet(); });
+  document.getElementById('typeIncome').addEventListener('click', ()=>setTxType('income'));
+  document.getElementById('typeExpense').addEventListener('click', ()=>setTxType('expense'));
+  document.getElementById('saveTx').addEventListener('click', addTransaction);
+
+  document.querySelectorAll('[data-range]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      state.range = b.dataset.range;
+      document.querySelectorAll('.seg-btn').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      renderChart();
+    });
+  });
+
+  document.getElementById('filterDate').addEventListener('change', renderHistory);
+  document.getElementById('filterType').addEventListener('change', renderHistory);
+  document.getElementById('resetFilter').addEventListener('click', ()=>{
+    document.getElementById('filterDate').value='';
+    document.getElementById('filterType').value='all';
+    renderHistory();
+    toast('ফিল্টার রিসেট হয়েছে');
+  });
+
+  document.querySelectorAll('.theme-btn').forEach(b=>{
+    b.addEventListener('click', ()=>setTheme(b.dataset.theme));
+  });
+
+  document.getElementById('addCat').addEventListener('click', addCategory);
+  document.getElementById('catInput').addEventListener('keydown', e=>{ if(e.key==='Enter') addCategory(); });
+  document.getElementById('resetAll').addEventListener('click', resetAllData);
+  document.getElementById('exportBtn').addEventListener('click', doExport);
+}
+
+function init(){
+  load();
+  applyTheme();
+  document.getElementById('greetDate').textContent = bnDateFull();
+  bindEvents();
+  populateFormCategories();
+  renderCategories();
+  renderAll();
+  switchTab('home');
+  refreshIcons();
+}
+
+// expose for inline handlers
+window.switchTab = switchTab;
+window.deleteTransaction = deleteTransaction;
+window.deleteCat = deleteCat;
+
+document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
-</html>
+        </html>
